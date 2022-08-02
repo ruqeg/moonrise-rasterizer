@@ -6,11 +6,11 @@
 extern void
 MRE_Interpolate_Int16
 (
+  int16_t  * ds,
   int16_t    i0,
   int16_t    d0,
   int16_t    i1,
-  int16_t    d1,
-  int16_t  * d_arr
+  int16_t    d1
 );
 
 

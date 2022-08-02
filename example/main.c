@@ -1,10 +1,13 @@
-#include <MRE_line.h>
+#include <MRE_graphics.h>
 
 #include <SDL2/SDL.h>
 
 
 #define WINDOW_WIDTH   800
 #define WINDOW_HEIGHT  600
+
+int16_t     MRE_buff_w = WINDOW_WIDTH;
+uint32_t  * MRE_buff   = NULL;
 
 
 int 
@@ -66,17 +69,23 @@ main
           break;
       }
     }
-
+    
     SDL_LockTexture( sdl_texture, NULL, &pixels, &pixels_pitch );
-   
-    MRE_DrawLine(
-      ( Uint32* )( pixels ),
-      WINDOW_WIDTH,
-      0, 0,
-      200, 500,
+    
+    MRE_buff = pixels;
+    MRE_DrawFilledTriangle(
+      150, 150,
+      350, 200,
+      0,   400,
       0xFFFFFFFFu
     );
-    
+    MRE_DrawWireframeTriangle(
+      150, 150,
+      350, 200,
+      0,   400,
+      0xFF00FFFFu
+    );
+
     SDL_UnlockTexture( sdl_texture );
     
 

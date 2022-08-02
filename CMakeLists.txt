@@ -12,7 +12,7 @@ include_directories(include)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src)
 
 add_library(moonrise_engine
-  ${SRCROOT}/MRE_line.c
+  ${SRCROOT}/MRE_graphics.c
   ${SRCROOT}/MRE_system.c
 )
 
