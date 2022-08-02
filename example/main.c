@@ -26,6 +26,9 @@ main
   SDL_Window       * window;
   SDL_Renderer     * sdl_renderer;
   SDL_Texture      * sdl_texture;
+
+  struct MRE_Color   f_color;
+  struct MRE_Color   s_color;
   
 
 
@@ -53,7 +56,17 @@ main
   );
 
 
+ 
+  f_color.r = 255;
+  f_color.g = 0;
+  f_color.b = 255;
+  f_color.a = 255;
   
+  s_color.r = 7;
+  s_color.g = 239;
+  s_color.b = 177;
+  s_color.a = 255;
+
   quit = 0;
 
 
@@ -85,6 +98,21 @@ main
       0,   400,
       0xFF00FFFFu
     );
+    MRE_DrawShadedTriangle
+    (
+      450, 50, 0.3,
+      350, 120, 0,
+      700, 400, 0.9,
+      f_color
+    );
+    MRE_DrawShadedTriangle
+    (
+      400, 300, 0.1,
+      400, 500, 0,
+      600, 500, 1,
+      s_color
+    );
+
 
     SDL_UnlockTexture( sdl_texture );
     

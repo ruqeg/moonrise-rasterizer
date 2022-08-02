@@ -3,40 +3,34 @@
 
 #include <stdint.h>
 
-extern void
-MRE_Interpolate_Int16
+#define MRE_INTEROPLATE_TEMPLATE_DECLARATION\
+( FUNCTION_NAME, TYPE_A, TYPE_B )           \
+extern void                                 \
+FUNCTION_NAME                               \
+(                                           \
+  TYPE_B  * ds,                             \
+  TYPE_A    i0,                             \
+  TYPE_B    d0,                             \
+  TYPE_A    i1,                             \
+  TYPE_B    d1                              \
+);                                          \
+
+MRE_INTEROPLATE_TEMPLATE_DECLARATION
 (
-  int16_t  * ds,
-  int16_t    i0,
-  int16_t    d0,
-  int16_t    i1,
-  int16_t    d1
-);
-
-
-#define MRE_SWAP_I16( x1, x2 )\
-(               \
-  {             \
-  int16_t tmp;  \
-                \
-  tmp = x1;     \
-  x1 = x2;      \
-  x2 = tmp;     \
-  }             \
+  MRE_Interpolate_Int16Int16,
+  int16_t,
+  int16_t
 )
 
-#define MRE_SWAP_T_I16( x1, x2, y1, y2 )\
-(               \
-  {             \
-  int16_t tmp;  \
-                \
-  tmp = x1;     \
-  x1 = x2;      \
-  x2 = tmp;     \
-  tmp = y1;     \
-  y1 = y2;      \
-  y2 = tmp;     \
-  }             \
+MRE_INTEROPLATE_TEMPLATE_DECLARATION
+(
+  MRE_Interpolate_Int16Double,
+  int16_t,
+  double
 )
+
+#undef MRE_INTEROPLATE_TEMPLATE_DECLARATION
+
+#include <MRE_system.ini>
 
 #endif
