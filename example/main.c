@@ -1,4 +1,5 @@
 #include <MRE_graphics.h>
+#include <MRE_math.h>
 
 #include <SDL2/SDL.h>
 
@@ -7,8 +8,8 @@
 #define WINDOW_HEIGHT  600
 
 int16_t     MRE_buff_w = WINDOW_WIDTH;
+int16_t     MRE_buff_h = WINDOW_HEIGHT;
 uint32_t  * MRE_buff   = NULL;
-
 
 int 
 main
@@ -27,9 +28,14 @@ main
   SDL_Renderer     * sdl_renderer;
   SDL_Texture      * sdl_texture;
 
-  struct MRE_Color   f_color;
-  struct MRE_Color   s_color;
-  
+  struct MRE_Color   triangle_color;
+
+  MRE_Mat4           projection_mat;
+  MRE_Mat4           transform_mat;
+  MRE_Mat4           scale_mat;
+  MRE_Mat4           rotate_mat;
+  MRE_Mat4           mat;
+
 
 
   SDL_Init(SDL_INIT_VIDEO);
@@ -57,19 +63,78 @@ main
 
 
  
-  f_color.r = 255;
-  f_color.g = 0;
-  f_color.b = 255;
-  f_color.a = 255;
-  
-  s_color.r = 7;
-  s_color.g = 239;
-  s_color.b = 177;
-  s_color.a = 255;
+  triangle_color.r = 255;
+  triangle_color.g = 0;
+  triangle_color.b = 255;
+  triangle_color.a = 255;
 
   quit = 0;
 
+  MRE_PerspectiveMat4(
+    MRE_PI / 3.0,
+    WINDOW_WIDTH / ( double )( WINDOW_HEIGHT ),
+    1,
+    100,
+    projection_mat
+  );
 
+  MRE_F64   veretices[] =
+  {
+     1,  1,  1,
+    -1,  1,  1,
+    -1, -1,  1,
+     1, -1,  1,
+     1,  1, -1,
+    -1,  1, -1,
+    -1, -1, -1,
+     1, -1, -1
+  };
+  
+
+  MRE_UI32  traingles[] =
+  {
+    0, 1, 2,
+    0, 2, 3,
+    4, 0, 3,
+    4, 3, 7,
+    5, 4, 7,
+    5, 7, 6,
+    1, 5, 6,
+    1, 6, 2,
+    4, 5, 1,
+    4, 1, 0,
+    2, 6, 7,
+    2, 7, 3
+  };
+
+  MRE_TanslateMat4(
+    ( MRE_Vec3 ){2, 0, 6},
+    transform_mat
+  );
+  MRE_ScaleMat4(
+    ( MRE_Vec3 ){1, 1.5, 1},
+    scale_mat
+  );
+  MRE_RotateMat4(
+    ( MRE_Vec3 ){MRE_PI_2, 0, 0},
+    rotate_mat
+  );
+
+  MRE_Mul_Mat4(
+    rotate_mat,
+    scale_mat,
+    mat
+  );
+  MRE_Mul_Mat4(
+    transform_mat,
+    mat,
+    mat
+  );
+  MRE_Mul_Mat4(
+    projection_mat,
+    mat,
+    mat
+  );
 
   while ( quit == 0 )
   {
@@ -84,36 +149,18 @@ main
     }
     
     SDL_LockTexture( sdl_texture, NULL, &pixels, &pixels_pitch );
-    
+   
+    memset( pixels, 0, sizeof(MRE_UI32) * WINDOW_WIDTH * WINDOW_HEIGHT);
+
     MRE_buff = pixels;
-    MRE_DrawFilledTriangle(
-      150, 150,
-      350, 200,
-      0,   400,
+    
+    MRE_RenderModel(
+      veretices, 8,
+      traingles, 12,
+      mat,
       0xFFFFFFFFu
     );
-    MRE_DrawWireframeTriangle(
-      150, 150,
-      350, 200,
-      0,   400,
-      0xFF00FFFFu
-    );
-    MRE_DrawShadedTriangle
-    (
-      450, 50, 0.3,
-      350, 120, 0,
-      700, 400, 0.9,
-      f_color
-    );
-    MRE_DrawShadedTriangle
-    (
-      400, 300, 0.1,
-      400, 500, 0,
-      600, 500, 1,
-      s_color
-    );
-
-
+    
     SDL_UnlockTexture( sdl_texture );
     
 

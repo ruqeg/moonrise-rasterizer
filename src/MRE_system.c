@@ -13,10 +13,10 @@ FUNCTION_NAME                                                    \
 )                                                                \
 {                                                                \
   TYPE_A   i;                                                    \
-  double   a;                                                    \
-  double   d;                                                    \
+  MRE_F64  a;                                                    \
+  MRE_F64  d;                                                    \
                                                                  \
-  a = ( d1 - d0 ) / ( double )( i1 - i0 );                       \
+  a = ( d1 - d0 ) / ( MRE_F64 )( i1 - i0 );                      \
   d = d0;                                                        \
                                                                  \
   for ( i = i0; i <= i1; ++i )                                   \
@@ -28,11 +28,11 @@ FUNCTION_NAME                                                    \
 
 MRE_INTERPOLATE_TEMPLATE_IMPLEMENTATION
 (
-  MRE_Interpolate_Int16Int16,
-  int16_t, int16_t 
+  MRE_Interpolate_I16_I16,
+  MRE_I16, MRE_I16
 )
 MRE_INTERPOLATE_TEMPLATE_IMPLEMENTATION
 (
-  MRE_Interpolate_Int16Double, 
-  int16_t, double
+  MRE_Interpolate_I16_F64,
+  MRE_I16, MRE_F64
 )

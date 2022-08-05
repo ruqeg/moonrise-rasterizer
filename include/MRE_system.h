@@ -1,7 +1,7 @@
 #ifndef MRE_SYSTEM_H
 #define MRE_SYSTEM_H
 
-#include <stdint.h>
+#include <MRE_types.h>
 
 #define MRE_INTEROPLATE_TEMPLATE_DECLARATION\
 ( FUNCTION_NAME, TYPE_A, TYPE_B )           \
@@ -17,16 +17,16 @@ FUNCTION_NAME                               \
 
 MRE_INTEROPLATE_TEMPLATE_DECLARATION
 (
-  MRE_Interpolate_Int16Int16,
-  int16_t,
-  int16_t
+  MRE_Interpolate_I16_I16,
+  MRE_I16,
+  MRE_I16
 )
 
 MRE_INTEROPLATE_TEMPLATE_DECLARATION
 (
-  MRE_Interpolate_Int16Double,
-  int16_t,
-  double
+  MRE_Interpolate_I16_F64,
+  MRE_I16,
+  MRE_F64
 )
 
 #undef MRE_INTEROPLATE_TEMPLATE_DECLARATION
