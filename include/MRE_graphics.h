@@ -67,12 +67,12 @@ extern
 void
 MRE_RenderModel
 (
-  const void    * vert_p,
-  MRE_I32         vert_count,
-  const void    * tr_p,
-  MRE_I32         tr_size,
-  const MRE_Mat4  proj_mat4,
-  MRE_Pixel       pixel
+  const void      * vert_p,
+  MRE_I32           vert_count,
+  const void      * tr_p,
+  MRE_I32           tr_count,
+  const MRE_Mat4    proj_mat4,
+  MRE_Pixel         pixel
 );
 
 extern

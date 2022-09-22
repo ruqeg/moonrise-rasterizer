@@ -209,12 +209,12 @@ MRE_DrawShadedTriangle
 
 void MRE_RenderModel
 (
-  const void    * vert_p,
-  MRE_I32         vert_count,
-  const void    * tr_p,
-  MRE_I32         tr_count,
-  const MRE_Mat4  proj_mat4,
-  MRE_Pixel       pixel
+  const void      * vert_p,
+  MRE_I32           vert_count,
+  const void      * tr_p,
+  MRE_I32           tr_count,
+  const MRE_Mat4    proj_mat4,
+  MRE_Pixel         pixel
 )
 {
   MRE_UI32           i;
@@ -227,10 +227,10 @@ void MRE_RenderModel
   c_vert_vec = vert_p;
   for ( i = 0; i < vert_count; ++i )
   {
-    MRE_Set_Vec4_3( c_vert_vec[i], 1.0, un_vert_vec );
-    MRE_Mul_Mat4_V( proj_mat4, un_vert_vec, un_vert_vec );
-    MRE_Div_Vec4_S( un_vert_vec, un_vert_vec[3], un_vert_vec );
-    MRE_Copy_Vec3( un_vert_vec, gl_vert_p[i] );
+    MRE_SET_VEC4_VEC3S( c_vert_vec[i], 1.0, un_vert_vec );
+    MRE_MulMat4V( proj_mat4, un_vert_vec, un_vert_vec );
+    MRE_DIV_VEC4_S( un_vert_vec, un_vert_vec[3], un_vert_vec );
+    MRE_COPY_VEC3( un_vert_vec, gl_vert_p[i] );
   }
 
   tr_vec = tr_p;

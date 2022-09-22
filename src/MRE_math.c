@@ -95,98 +95,21 @@ MRE_RotateMat4
   dest[3][3] = 1.0;
 }
 
-
 MRE_INLINE_
 void
-MRE_Set_Vec4
+MRE_InverseMat4
 (
-  MRE_F64   x,
-  MRE_F64   y,
-  MRE_F64   z,
-  MRE_F64   w,
-  MRE_Vec4  dest
+  const MRE_Mat4  mat4,
+  MRE_Mat4        dest
 )
 {
-  dest[0] = x;
-  dest[1] = y;
-  dest[2] = z;
-  dest[3] = w;
+  //TODO
 }
+
 
 MRE_INLINE_
 void
-MRE_Set_Vec4_3
-(
-  const MRE_Vec3  v,
-  MRE_F64         last,
-  MRE_Vec4        dest
-)
-{
-  dest[0] = v[0];
-  dest[1] = v[1];
-  dest[2] = v[2];
-  dest[3] = last;
-}
-
-MRE_INLINE_
-void
-MRE_Copy_Vec4
-(
-  const MRE_Vec4  v,
-  MRE_Vec4        dest
-)
-{
-  dest[0] = v[0];
-  dest[1] = v[1];
-  dest[2] = v[2];
-  dest[3] = v[3];
-}
-
-MRE_INLINE_
-void
-MRE_Copy_Vec3
-(
-  const MRE_Vec3  v,
-  MRE_Vec3        dest
-)
-{
-  dest[0] = v[0];
-  dest[1] = v[1];
-  dest[2] = v[2];
-}
-
-MRE_INLINE_
-void
-MRE_Add_Vec4
-(
-  const MRE_Vec4  v1,
-  const MRE_Vec4  v2,
-  MRE_Vec4        dest
-)
-{
-  dest[0] = v1[0] + v2[0];
-  dest[1] = v1[1] + v2[1];
-  dest[2] = v1[2] + v2[2];
-  dest[3] = v1[3] + v2[3];
-}
-
-MRE_INLINE_
-void
-MRE_Div_Vec4_S
-(
-  const MRE_Vec4  v,
-  MRE_F64         s,
-  MRE_Vec4        dest
-)
-{
-  dest[0] = v[0] / s;
-  dest[1] = v[1] / s;
-  dest[2] = v[2] / s;
-}
-
-MRE_INLINE_
-void
-MRE_Mul_Mat4_V
+MRE_MulMat4V
 (
   const MRE_Mat4  m,
   const MRE_Vec4  v,
@@ -205,7 +128,7 @@ MRE_Mul_Mat4_V
 
 MRE_INLINE_
 void
-MRE_Mul_Mat4
+MRE_MulMat4
 (
   const MRE_Mat4  m1,
   const MRE_Mat4  m2,

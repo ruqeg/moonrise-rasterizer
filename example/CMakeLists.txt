@@ -1,7 +1,7 @@
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 add_executable(example_exe
-  main.c
+  test.c
 )
 
 target_link_libraries(example_exe moonrise_engine
