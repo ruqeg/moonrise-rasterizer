@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include <float.h>
 
+#define MRE_RECR_SBS_FLAG  0
+#define MRE_ITER_SBS_FLAG  !0
+
 extern
 void
 MRE_SmallestBoundingSphere

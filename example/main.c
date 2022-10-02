@@ -4,13 +4,9 @@
 
 #include <SDL2/SDL.h>
 
-#include <time.h>
-
-
-#define P_COUNT 6
-
 #define WINDOW_WIDTH   800
 #define WINDOW_HEIGHT  600
+
 
 int16_t     MRE_buff_w = WINDOW_WIDTH;
 int16_t     MRE_buff_h = WINDOW_HEIGHT;
@@ -34,11 +30,7 @@ main
   SDL_Texture      * sdl_texture;
 
   struct MRE_Color   triangle_color;
-  
-  MRE_F64            points_x[ P_COUNT ];
-  MRE_F64            points_y[ P_COUNT ];
 
-  MRE_Mat4           projection_mat;
   MRE_Mat4           transform_mat;
   MRE_Mat4           scale_mat;
   MRE_Mat4           rotate_mat;
@@ -53,6 +45,14 @@ main
   MRE_Mat4           camera_pos_mat;
   MRE_Mat4           camera_rot_mat;
   MRE_Mat4           camera_mat;
+
+
+
+  const MRE_F64  aspect =  MRE_buff_w / (MRE_F64)MRE_buff_h;
+  const MRE_F64  z_min  =  0.5;
+  const MRE_F64  z_max  =  100.0;
+  const MRE_F64  fowy   =  MRE_PI / 5.0;
+
 
 
 
@@ -88,41 +88,40 @@ main
 
   quit = 0;
 
-  MRE_PerspectiveMat4(
-    MRE_PI / 3.0,
-    WINDOW_WIDTH / ( double )( WINDOW_HEIGHT ),
-    1,
-    100,
-    projection_mat
+  MRE_SetPrespsectiveView(
+    fowy,
+    aspect,
+    z_min,
+    z_max
   );
 
-  MRE_F64   veretices[] =
+  MRE_Vec3   veretices[] =
   {
-     1,  1,  1,
-    -1,  1,  1,
-    -1, -1,  1,
-     1, -1,  1,
-     1,  1, -1,
-    -1,  1, -1,
-    -1, -1, -1,
-     1, -1, -1
+    { 1,  1,  1},
+    {-1,  1,  1},
+    {-1, -1,  1},
+    { 1, -1,  1},
+    { 1,  1, -1},
+    {-1,  1, -1},
+    {-1, -1, -1},
+    { 1, -1, -1}
   };
   
 
-  MRE_UI32  traingles[] =
+  MRE_IVec3   traingles[] =
   {
-    0, 1, 2,
-    0, 2, 3,
-    4, 0, 3,
-    4, 3, 7,
-    5, 4, 7,
-    5, 7, 6,
-    1, 5, 6,
-    1, 6, 2,
-    4, 5, 1,
-    4, 1, 0,
-    2, 6, 7,
-    2, 7, 3
+   {0, 1, 2},
+   {0, 2, 3},
+   {4, 0, 3},
+   {4, 3, 7},
+   {5, 4, 7},
+   {5, 7, 6},
+   {1, 5, 6},
+   {1, 6, 2},
+   {4, 5, 1},
+   {4, 1, 0},
+   {2, 6, 7},
+   {2, 7, 3}
   };
 
   MRE_TanslateMat4(
@@ -130,7 +129,7 @@ main
     transform_mat
   );
   MRE_ScaleMat4(
-    ( MRE_Vec3 ){3, 1, 1},
+    ( MRE_Vec3 ){1, 1, 1},
     scale_mat
   );
   MRE_RotateMat4(
@@ -138,18 +137,13 @@ main
     rotate_mat
   );
 
-  MRE_Mul_Mat4(
+  MRE_MulMat4(
     rotate_mat,
     scale_mat,
     model_mat
   );
-  MRE_Mul_Mat4(
+  MRE_MulMat4(
     transform_mat,
-    model_mat,
-    model_mat
-  );
-  MRE_Mul_Mat4(
-    projection_mat,
     model_mat,
     model_mat
   );
@@ -162,29 +156,16 @@ main
     camera_rot_mat
   );
 
-  MRE_Mul_Mat4(
+  MRE_MulMat4(
     camera_rot_mat,
     camera_pos_mat,
     camera_mat
   );
-  MRE_Mul_Mat4(
+  MRE_MulMat4(
     camera_mat,
     model_mat,
     world_mat
   );
-  MRE_Mul_Mat4(
-    projection_mat,
-    world_mat,
-    world_mat
-  );
-
-  srand(time(NULL));
-
-  for ( int i = 0; i < P_COUNT; ++i )
-  {
-    points_x[ i ] = WINDOW_WIDTH * 0.25 + rand() % (int)(WINDOW_WIDTH * 0.5 );
-    points_y[ i ] = WINDOW_HEIGHT * 0.25 + rand() % (int)(WINDOW_HEIGHT * 0.5 );
-  }
 
 
   while ( quit == 0 )
@@ -199,42 +180,37 @@ main
         case SDL_KEYDOWN:
           switch ( event.key.keysym.sym )
           {
-            case SDLK_w:  camera_pos_x += 0.1;   break;
-            case SDLK_s:  camera_pos_x -= 0.1;   break;
-            case SDLK_a:  camera_pos_y += 0.1;   break;
-            case SDLK_d:  camera_pos_y -= 0.1;   break;
-            case SDLK_x:  camera_pos_z += 0.1;   break;
-            case SDLK_c:  camera_pos_z -= 0.1;   break;
+            case SDLK_w:  camera_pos_z += 0.1;   break;
+            case SDLK_s:  camera_pos_z -= 0.1;   break;
+            case SDLK_a:  camera_pos_x -= 0.1;   break;
+            case SDLK_d:  camera_pos_x += 0.1;   break;
+            case SDLK_x:  camera_pos_y += 0.1;   break;
+            case SDLK_c:  camera_pos_y -= 0.1;   break;
             
-            case SDLK_y:  camera_rot_x += 0.1;   break;
-            case SDLK_u:  camera_rot_x -= 0.1;   break;
-            case SDLK_h:  camera_rot_y += 0.1;   break;
-            case SDLK_j:  camera_rot_y -= 0.1;   break;
-            case SDLK_n:  camera_rot_z += 0.1;   break;
-            case SDLK_m:  camera_rot_z -= 0.1;   break;
+            case SDLK_y:  camera_rot_z += 0.1;   break;
+            case SDLK_u:  camera_rot_z -= 0.1;   break;
+            case SDLK_h:  camera_rot_x += 0.1;   break;
+            case SDLK_j:  camera_rot_x -= 0.1;   break;
+            case SDLK_n:  camera_rot_y += 0.1;   break;
+            case SDLK_m:  camera_rot_y -= 0.1;   break;
           }
-          MRE_TanslateMat4(
-            ( MRE_Vec3 ){-camera_pos_x, -camera_pos_y, -camera_pos_z},
-            camera_pos_mat
-          );
           MRE_RotateMat4(
             ( MRE_Vec3 ){-camera_rot_x, -camera_rot_y, -camera_rot_z},
             camera_rot_mat
           );
+          MRE_TanslateMat4(
+            ( MRE_Vec3 ){-camera_pos_x, -camera_pos_y, -camera_pos_z},
+            camera_pos_mat
+          );
 
-          MRE_Mul_Mat4(
+          MRE_MulMat4(
             camera_rot_mat,
             camera_pos_mat,
             camera_mat
           );
-          MRE_Mul_Mat4(
+          MRE_MulMat4(
             camera_mat,
             model_mat,
-            world_mat
-          );
-          MRE_Mul_Mat4(
-            projection_mat,
-            world_mat,
             world_mat
           );
           break;
@@ -246,37 +222,41 @@ main
     memset( pixels, 0, sizeof(MRE_UI32) * WINDOW_WIDTH * WINDOW_HEIGHT);
 
     MRE_buff = pixels;
-    
-    MRE_RenderModel(
-      veretices, 8,
-      traingles, 12,
-      world_mat,
-      0xFFFFFFFFu
-    );
-  
-    for ( int i = 0; i < P_COUNT; ++i )
+   
+    MRE_Vec3  world_vert[ 8 ];
+    for ( int k = 0; k < 8; ++k )
     {
-      MRE_buff[ (int)(points_x[ i ] + 1 + points_y[ i ] * WINDOW_WIDTH) ] = 0x00FF00FFu;
-      MRE_buff[ (int)(points_x[ i ] - 1 + points_y[ i ] * WINDOW_WIDTH) ] = 0x00FF00FFu;
-      MRE_buff[ (int)(points_x[ i ] + 1 + (points_y[ i ] + 1) * WINDOW_WIDTH) ] = 0x00FF00FFu;
-      MRE_buff[ (int)(points_x[ i ] - 1 + (points_y[ i ] + 1) * WINDOW_WIDTH) ] = 0x00FF00FFu;
-      MRE_buff[ (int)(points_x[ i ] + 1 + (points_y[ i ] - 1) * WINDOW_WIDTH) ] = 0x00FF00FFu;
-      MRE_buff[ (int)(points_x[ i ] - 1 + (points_y[ i ] - 1) * WINDOW_WIDTH) ] = 0x00FF00FFu;
-      MRE_buff[ (int)(points_x[ i ] + (points_y[ i ] + 1) * WINDOW_WIDTH) ] = 0x00FF00FFu;
-      MRE_buff[ (int)(points_x[ i ] + (points_y[ i ] - 1) * WINDOW_WIDTH) ] = 0x00FF00FFu;
-      MRE_buff[ (int)(points_x[ i ] + points_y[ i ] * WINDOW_WIDTH) ] = 0x00FF00FFu;
+      MRE_MulMat4Vec3Vec3( world_mat, veretices[ k ], 1.0, world_vert[ k ] );
     }
+
+    MRE_Vec4 sphere;
+
+    MRE_SmallestBoundingSphere( world_vert, 8, MRE_RECR_SBS_FLAG, sphere );
+
+    MRE_I32      new_vert_count = 8;
+    MRE_I32      new_trig_count = 12;
+    MRE_Vec3   * vert_res;
+    MRE_IVec3  * triangles_res;
+    MRE_I32 status = MRE_ClipModel(
+      world_vert, &new_vert_count,
+      traingles, &new_trig_count, 
+      sphere,
+      &vert_res, &triangles_res
+    );
     
+    if ( status == MRE_MODEL_INPL || status == MRE_MODEL_CLIPED )
+    {
+      MRE_RenderModel(
+        vert_res, new_vert_count,
+        triangles_res, new_trig_count,
+        0xFFFFFFFFu
+      );
+    }
+    free( vert_res );
+    free( triangles_res );
+
     SDL_UnlockTexture( sdl_texture );
     
-
-    MRE_Vec3 p[500000];
-    MRE_Vec3 ru[3];
-    MRE_Vec4 d;
-
-    MRE_SmallestBoundingSphere(p, 7, d);
-    printf("%f %f %f %f\n", d[0], d[1], d[2], d[3]);
-
     SDL_Rect r = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
     SDL_RenderCopy( sdl_renderer, sdl_texture, NULL, &r );
 
@@ -292,3 +272,4 @@ main
 
   return 0;
 }
+

@@ -251,7 +251,7 @@ WelzlAlgSmallestBoundingSphere_Iterative
         continue;
       }
     }
-    else if (task[0] == 1)
+    else if ( task[0] == 1 )
     {
       if ( ! IS_POINT_IN_SHPERE( p[ task[1] - 1 ], d ) )
       {
@@ -295,4 +295,5 @@ MRE_SmallestBoundingSphere
   {
     WelzlAlgSmallestBoundingSphere_Iterative( p, ps, d );
   }
+  d[3] = sqrt( d[3] );
 }

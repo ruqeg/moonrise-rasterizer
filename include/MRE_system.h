@@ -31,34 +31,6 @@ MRE_INTEROPLATE_TEMPLATE_DECLARATION
 
 #undef MRE_INTEROPLATE_TEMPLATE_DECLARATION
 
+#include <MRE_system.ini>
 
-
-#define MRE_SWAP( TYPE, x1, x2 )\
-(               \
-  {             \
-  TYPE tmp;     \
-                \
-  tmp = x1;     \
-  x1 = x2;      \
-  x2 = tmp;     \
-  }             \
-)
-
-#define MRE_SWAP_T( TYPE, x1, x2, y1, y2 )\
-(               \
-  {             \
-  TYPE tmp;     \
-                \
-  tmp = x1;     \
-  x1 = x2;      \
-  x2 = tmp;     \
-  tmp = y1;     \
-  y1 = y2;      \
-  y2 = tmp;     \
-  }             \
-)
-
-
-
-
-#endif
+#endif /* MRE_SYSTEM_H */

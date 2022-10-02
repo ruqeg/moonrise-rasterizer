@@ -3,11 +3,17 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <MRE_system.h>
 #include <MRE_math.h>
 #include <MRE_color.h>
 
+#include <MRE_bounding_sphere.h>
+
+#define MRE_MODEL_INPL    1
+#define MRE_MODEL_OUPL   -1
+#define MRE_MODEL_CLIPED  0
 
 extern
 void
@@ -65,18 +71,6 @@ MRE_DrawShadedTriangle
 
 extern
 void
-MRE_RenderModel
-(
-  const void      * vert_p,
-  MRE_I32           vert_count,
-  const void      * tr_p,
-  MRE_I32           tr_count,
-  const MRE_Mat4    proj_mat4,
-  MRE_Pixel         pixel
-);
-
-extern
-void
 MRE_RenderTriangle
 (
   const MRE_Vec2  v0,
@@ -85,10 +79,56 @@ MRE_RenderTriangle
   MRE_Pixel       pixel
 );
 
+extern
+void
+MRE_RenderModel
+(
+  const MRE_Vec3   * const vert,
+  MRE_I32                  vert_count,
+  const MRE_IVec3  * const triangles,
+  MRE_I32                  triangles_count,
+  MRE_Pixel                pixel
+);
+
+//! FREE d_vert/d_triangles after func_call
+extern
+MRE_I32
+MRE_ClipModel
+(
+  const MRE_Vec3   * const   vert,
+  MRE_I32          * const   vert_count,
+  const MRE_IVec3  * const   triangles,
+  MRE_I32          * const   triangles_count,
+  const MRE_Vec4             bsphere,
+  MRE_Vec3         * * const d_vert,
+  MRE_IVec3        * * const d_triangles
+);
+
+extern
+MRE_I32
+MRE_ClipTrianglesAgainstPlane
+(
+  const MRE_Vec4           plane,
+  const MRE_Vec3   * const vert,
+  MRE_I32          * const vert_count,
+  const MRE_IVec3  * const triangles,
+  MRE_I32          * const triangles_count,
+  MRE_Vec3         * const d_vert,
+  MRE_IVec3        * const d_triangles
+);
+
+extern
+void
+MRE_SetPrespsectiveView
+(
+  MRE_F64  fow_y,
+  MRE_F64  ratio,
+  MRE_F64  z_min,
+  MRE_F64  z_max
+);
 
 extern MRE_UI32   * MRE_buff;
 extern MRE_I16      MRE_buff_w;
 extern MRE_I16      MRE_buff_h;
-
 
 #endif

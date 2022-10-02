@@ -12,7 +12,7 @@ void
 MRE_PerspectiveMat4
 (
   MRE_F64   fovy,
-  MRE_F64   ratio,
+  MRE_F64   aspect,
   MRE_F64   nz,
   MRE_F64   fz,
   MRE_Mat4  dest
@@ -52,11 +52,31 @@ MRE_InverseMat4
 
 extern
 void
-MRE_MulMat4V
+MRE_MulMat4Vec4Vec4
 (
   const MRE_Mat4  m,
   const MRE_Vec4  v,
   MRE_Vec4        dest
+);
+
+extern
+void
+MRE_MulMat4Vec3Vec4
+(
+  const MRE_Mat4  m,
+  const MRE_Vec3  v,
+  const MRE_F64   s,
+  MRE_Vec4        dest
+);
+
+extern
+void
+MRE_MulMat4Vec3Vec3
+(
+  const MRE_Mat4  m,
+  const MRE_Vec3  v,
+  const MRE_F64   s,
+  MRE_Vec3        dest
 );
 
 extern
