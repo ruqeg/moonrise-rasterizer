@@ -7,9 +7,9 @@ MRE_INLINE_
 void
 CalcCircumscribedSphere2Points
 (
-  const MRE_Vec3    p1,
-  const MRE_Vec3    p2,
-  MRE_Vec4          d
+    const MRE_Vec3  p1,
+    const MRE_Vec3  p2,
+    MRE_Vec4        d
 )
 {
   d[ 0 ] = ( p1[0] + p2[0] ) / 2.0;
@@ -22,10 +22,10 @@ MRE_INLINE_
 void
 CalcCircumscribedSphere3Points
 (
-  const MRE_Vec3    p1,
-  const MRE_Vec3    p2,
-  const MRE_Vec3    p3,
-  MRE_Vec4          d
+    const MRE_Vec3  p1,
+    const MRE_Vec3  p2,
+    const MRE_Vec3  p3,
+    MRE_Vec4        d
 )
 {
   //MabX _|_ AB
@@ -65,11 +65,11 @@ MRE_INLINE_
 void
 CalcCircumscribedSphere4Points
 (
-  const MRE_Vec3    p1,
-  const MRE_Vec3    p2,
-  const MRE_Vec3    p3,
-  const MRE_Vec3    p4,
-  MRE_Vec4          d
+    const MRE_Vec3  p1,
+    const MRE_Vec3  p2,
+    const MRE_Vec3  p3,
+    const MRE_Vec3  p4,
+    MRE_Vec4        d
 )
 {
   //MabX _|_ AB
@@ -112,9 +112,9 @@ CalcCircumscribedSphere4Points
 void
 CalcCircumscribedSphere
 (
-  const MRE_Vec3  * r,
-  MRE_I32           rs,
-  MRE_Vec4          d
+    const MRE_Vec3  * r,
+    MRE_I32           rs,
+    MRE_Vec4          d
 )
 {
   if ( rs == 0 )
@@ -182,11 +182,11 @@ CalcCircumscribedSphere
 void
 WelzlAlgSmallestBoundingSphere_Recursive
 (
-  const MRE_Vec3  * p,
-  MRE_I32           ps,
-  MRE_Vec3        * r,
-  MRE_I32           rs,
-  MRE_Vec4          d
+    const MRE_Vec3  * p,
+    MRE_I32           ps,
+    MRE_Vec3        * r,
+    MRE_I32           rs,
+    MRE_Vec4          d
 )
 {
   if ( ps == 0 || rs == 4 )
@@ -207,9 +207,9 @@ WelzlAlgSmallestBoundingSphere_Recursive
 void
 WelzlAlgSmallestBoundingSphere_Iterative
 (
-  const MRE_Vec3  * p,
-  MRE_I32           ps,
-  MRE_Vec4          d
+    const MRE_Vec3  * p,
+    MRE_I32           ps,
+    MRE_Vec4          d
 )
 {
   MRE_I32    * task;
@@ -280,10 +280,10 @@ WelzlAlgSmallestBoundingSphere_Iterative
 void
 MRE_SmallestBoundingSphere
 (
-  const MRE_Vec3  * p,
-  MRE_I32           ps,
-  MRE_I32           type,
-  MRE_Vec4          d
+    const MRE_Vec3  * p,
+    MRE_I32           ps,
+    MRE_I32           type,
+    MRE_Vec4          d
 )
 {
   if ( type == 0 )

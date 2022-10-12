@@ -5,11 +5,11 @@
 void                                                             \
 FUNCTION_NAME                                                    \
 (                                                                \
-  TYPE_B  * ds,                                                  \
-  TYPE_A    i0,                                                  \
-  TYPE_B    d0,                                                  \
-  TYPE_A    i1,                                                  \
-  TYPE_B    d1                                                   \
+    TYPE_B  * ds,                                                  \
+    TYPE_A    i0,                                                  \
+    TYPE_B    d0,                                                  \
+    TYPE_A    i1,                                                  \
+    TYPE_B    d1                                                   \
 )                                                                \
 {                                                                \
   TYPE_A   i;                                                    \

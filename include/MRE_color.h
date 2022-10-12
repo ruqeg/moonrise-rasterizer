@@ -11,6 +11,13 @@ struct MRE_Color
 
 
 
+#define MRE_PIXEL_TO_COLOR( pixel, color )\
+({                                          \
+  color . r = ( pixel >> 24 ) & 0x000000FFu;\
+  color . g = ( pixel >> 16 ) & 0x000000FFu;\
+  color . b = ( pixel >> 8  ) & 0x000000FFu;\
+  color . a =  pixel          & 0x000000FFu;\
+})
 
 #define MRE_COLOR_TO_PIXEL( color )\
 (                                  \

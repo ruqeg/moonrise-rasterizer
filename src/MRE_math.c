@@ -3,11 +3,11 @@
 void
 MRE_PerspectiveMat4
 (
-  MRE_F64   fovy,
-  MRE_F64   aspect,
-  MRE_F64   nz,
-  MRE_F64   fz,
-  MRE_Mat4  dest
+    MRE_F64   fovy,
+    MRE_F64   aspect,
+    MRE_F64   nz,
+    MRE_F64   fz,
+    MRE_Mat4  dest
 )
 {
   const MRE_F64  ctan_y = 1.0 / tan( fovy * 0.5 );
@@ -36,8 +36,8 @@ MRE_PerspectiveMat4
 void
 MRE_TanslateMat4
 (
-  const MRE_Vec3  v,
-  MRE_Mat4        dest
+    const MRE_Vec3  v,
+    MRE_Mat4        dest
 )
 {
   dest[0][0]=1.0; dest[0][1]=0.0; dest[0][2]=0.0; dest[0][3]=v[0];
@@ -49,8 +49,8 @@ MRE_TanslateMat4
 void
 MRE_ScaleMat4
 (
-  const MRE_Vec3  v,
-  MRE_Mat4        dest
+    const MRE_Vec3  v,
+    MRE_Mat4        dest
 )
 {
   dest[0][0]=v[0]; dest[0][1]=0.0;  dest[0][2]=0.0;  dest[0][3]=0.0;
@@ -62,8 +62,8 @@ MRE_ScaleMat4
 void
 MRE_RotateMat4
 (
-  const MRE_Vec3  v,
-  MRE_Mat4        dest
+    const MRE_Vec3  v,
+    MRE_Mat4        dest
 )
 {
   MRE_F64  cos_x  =  cos( v[0] );
@@ -99,8 +99,8 @@ MRE_INLINE_
 void
 MRE_InverseMat4
 (
-  const MRE_Mat4  mat4,
-  MRE_Mat4        dest
+    const MRE_Mat4  mat4,
+    MRE_Mat4        dest
 )
 {
   //TODO
@@ -111,9 +111,9 @@ MRE_INLINE_
 void
 MRE_MulMat4Vec4Vec4
 (
-  const MRE_Mat4  m,
-  const MRE_Vec4  v,
-  MRE_Vec4        dest
+    const MRE_Mat4  m,
+    const MRE_Vec4  v,
+    MRE_Vec4        dest
 )
 {
   dest[0] = m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2] + m[0][3]*v[3];
@@ -126,10 +126,10 @@ MRE_INLINE_
 void
 MRE_MulMat4Vec3Vec4
 (
-  const MRE_Mat4  m,
-  const MRE_Vec3  v,
-  const MRE_F64   s,
-  MRE_Vec4        dest
+    const MRE_Mat4  m,
+    const MRE_Vec3  v,
+    const MRE_F64   s,
+    MRE_Vec4        dest
 )
 {
   dest[0] = m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2] + m[0][3]*s;
@@ -142,10 +142,10 @@ MRE_INLINE_
 void
 MRE_MulMat4Vec3Vec3
 (
-  const MRE_Mat4  m,
-  const MRE_Vec3  v,
-  const MRE_F64   s,
-  MRE_Vec3        dest
+    const MRE_Mat4  m,
+    const MRE_Vec3  v,
+    const MRE_F64   s,
+    MRE_Vec3        dest
 )
 {
   dest[0] = m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2] + m[0][3]*s;
@@ -157,9 +157,9 @@ MRE_INLINE_
 void
 MRE_MulMat4
 (
-  const MRE_Mat4  m1,
-  const MRE_Mat4  m2,
-  MRE_Mat4        dest
+    const MRE_Mat4  m1,
+    const MRE_Mat4  m2,
+    MRE_Mat4        dest
 )
 {
   MRE_F64 a00=m1[0][0], a01=m1[0][1], a02=m1[0][2], a03=m1[0][3];

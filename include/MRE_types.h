@@ -1,6 +1,7 @@
 #ifndef MRE_TYPES_H
 #define MRE_TYPES_H
 
+#include <float.h>
 
 typedef unsigned char       MRE_UI8;
 typedef signed char         MRE_I8;
@@ -31,6 +32,10 @@ typedef MRE_F64   MRE_Vec4[ 4 ];
 typedef MRE_Vec2  MRE_Mat2[ 2 ];
 typedef MRE_Vec3  MRE_Mat3[ 3 ];
 typedef MRE_Vec4  MRE_Mat4[ 4 ];
+
+
+#define MRE_F64_MAX DBL_MAX
+#define MRE_F64_MIN 0.00000000001
 
 
 #define MRE_PI    3.14159265358979323846264338327950288

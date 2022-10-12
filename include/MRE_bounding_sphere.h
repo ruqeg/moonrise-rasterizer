@@ -16,10 +16,10 @@ extern
 void
 MRE_SmallestBoundingSphere
 (
-  const MRE_Vec3  * p,
-  MRE_I32           ps,
-  MRE_I32           type,
-  MRE_Vec4          d
+    const MRE_Vec3  * p,
+    MRE_I32           ps,
+    MRE_I32           type,
+    MRE_Vec4          d
 );
 
 #endif
