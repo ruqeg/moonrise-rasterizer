@@ -322,14 +322,14 @@ MRE_RenderTriangle
 )
 {
   MRE_DrawFilledTriangle(
-    ( v0[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ),
-    ( v0[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ),
+    round( ( v0[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ) ),
+    round( ( v0[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ) ),
     1.0 / v0[2],
-    ( v1[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ),
-    ( v1[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ),
+    round( ( v1[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ) ),
+    round( ( v1[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ) ),
     1.0 / v1[2],
-    ( v2[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ),
-    ( v2[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ),
+    round( ( v2[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ) ),
+    round( ( v2[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ) ),
     1.0 / v2[2],
     pixel
   );

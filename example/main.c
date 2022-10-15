@@ -1,5 +1,6 @@
 #include <MRE_graphics.h>
 #include <MRE_bounding_sphere.h>
+#include <MRE_geometry.h>
 #include <MRE_math.h>
 
 #include <SDL2/SDL.h>
@@ -79,42 +80,26 @@ main
   );
 
 
-  MRE_I32    veretices_count = 8;
-  MRE_Vec3   world_veretices[ veretices_count ];
-  MRE_Vec3   veretices[ ] =
-  {
-    { 1,  1,  1},
-    {-1,  1,  1},
-    {-1, -1,  1},
-    { 1, -1,  1},
-    { 1,  1, -1},
-    {-1,  1, -1},
-    {-1, -1, -1},
-    { 1, -1, -1}
-  };
+  MRE_I32            vpc = 8;
+  MRE_I32            hpc = 8;
+
+
+  MRE_I32  veretices_count = 2 + ( vpc - 1 ) * hpc;
+  MRE_I32  triangles_count = 2 * hpc * ( vpc - 2 ) + 2 * hpc;
   
 
-  MRE_I32     triangles_count = 12;
-  MRE_IVec4   triangles[ ] =
-  {
-   {0, 1, 2, 0xFFFFFFFFu},
-   {0, 2, 3, 0xFFFFFFFFu},
-   {4, 0, 3, 0xFFFF00FFu},
-   {4, 3, 7, 0xFFFF00FFu},
-   {5, 4, 7, 0xFF0000FFu},
-   {5, 7, 6, 0xFF0000FFu},
-   {1, 5, 6, 0x00FF00FFu},
-   {1, 6, 2, 0x00FF00FFu},
-   {4, 5, 1, 0x00F0F0FFu},
-   {4, 1, 0, 0x00F0F0FFu},
-   {2, 6, 7, 0xFFF0F0FFu},
-   {2, 7, 3, 0xFFF0F0FFu}
-  };
+  MRE_Vec3    veretices[ veretices_count ];
+  MRE_IVec4   triangles[ triangles_count ];
+  
+  MRE_Vec3    world_veretices[ veretices_count ];
+  
+
+  MRE_CreateSphere( vpc, hpc, veretices, triangles );
 
 
   camera_pos[0] = 0;
   camera_pos[1] = 0;
-  camera_pos[2] = 0;
+  camera_pos[2] = 10;
   
   camera_rot[0] = 0;
   camera_rot[1] = 0;
@@ -146,17 +131,17 @@ main
           {
             case SDLK_w:  camera_pos[2] -= 0.1;   break;
             case SDLK_s:  camera_pos[2] += 0.1;   break;
-            case SDLK_a:  camera_pos[0] -= 0.1;   break;
-            case SDLK_d:  camera_pos[0] += 0.1;   break;
+            case SDLK_a:  camera_pos[0] += 0.1;   break;
+            case SDLK_d:  camera_pos[0] -= 0.1;   break;
             case SDLK_x:  camera_pos[1] -= 0.1;   break;
             case SDLK_c:  camera_pos[1] += 0.1;   break;
 
-            case SDLK_y:  camera_rot[2] -= 0.1;   break;
-            case SDLK_u:  camera_rot[2] += 0.1;   break;
-            case SDLK_h:  camera_rot[0] -= 0.1;   break;
-            case SDLK_j:  camera_rot[0] += 0.1;   break;
-            case SDLK_n:  camera_rot[1] -= 0.1;   break;
-            case SDLK_m:  camera_rot[1] += 0.1;   break;
+            case SDLK_y:  camera_rot[2] += 0.1;   break;
+            case SDLK_u:  camera_rot[2] -= 0.1;   break;
+            case SDLK_h:  camera_rot[0] += 0.1;   break;
+            case SDLK_j:  camera_rot[0] -= 0.1;   break;
+            case SDLK_n:  camera_rot[1] += 0.1;   break;
+            case SDLK_m:  camera_rot[1] -= 0.1;   break;
           }
           MRE_RotateMat4( camera_rot, rotation_mat );
           MRE_TanslateMat4( camera_pos, transform_mat );
@@ -175,7 +160,7 @@ main
         world_mat, veretices[ k ], 1.0, world_veretices[ k ]
       );
     }
-  
+
     MRE_SmallestBoundingSphere(
       world_veretices, veretices_count, MRE_RECR_SBS_FLAG, bounding_sphere
     );
@@ -199,7 +184,6 @@ main
       veretices_res, triangles_res
     );
 
-    
     
     SDL_LockTexture( sdl_texture, NULL, &pixels, &pixels_pitch );
     

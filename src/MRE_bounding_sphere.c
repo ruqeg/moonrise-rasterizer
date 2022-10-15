@@ -1,8 +1,5 @@
 #include <MRE_bounding_sphere.h>
 
-#define IS_POINT_IN_SHPERE( p, s )\
-( MRE_POINTS_DIST2( p, s ) <= s[3] )
-
 MRE_INLINE_
 void
 CalcCircumscribedSphere2Points
@@ -12,10 +9,10 @@ CalcCircumscribedSphere2Points
     MRE_Vec4        d
 )
 {
-  d[ 0 ] = ( p1[0] + p2[0] ) / 2.0;
-  d[ 1 ] = ( p1[1] + p2[1] ) / 2.0;
-  d[ 2 ] = ( p1[2] + p2[2] ) / 2.0;
-  d[ 3 ] = MRE_POINTS_DIST2( d, p1 );
+  d[0] = ( p1[0] + p2[0] ) / 2.0;
+  d[1] = ( p1[1] + p2[1] ) / 2.0;
+  d[2] = ( p1[2] + p2[2] ) / 2.0;
+  d[3] = MRE_POINTS_DIST2( d, p1 );
 }
 
 MRE_INLINE_
@@ -52,13 +49,23 @@ CalcCircumscribedSphere3Points
   const MRE_F64 c3 = a1*b2-a2*b1;
   const MRE_F64 d3 = p1[0]*a3+p1[1]*b3+p1[2]*c3;
 
-  MRE_SOLVE_LINER_SYSTEM_S_3(
-    a1, b1, c1, d1,
-    a2, b2, c2, d2,
-    a3, b3, c3, d3,
-    d[ 0 ], d[ 1 ], d[ 2 ]
-  );
-  d[ 3 ] = MRE_POINTS_DIST2( d, p1 );
+  if
+  (
+    MRE_SolveLinerSystem3
+    (
+      a1, b1, c1, d1,
+      a2, b2, c2, d2,
+      a3, b3, c3, d3,
+      &d[0], &d[1], &d[2]
+    )
+  )
+  {
+    d[3] = MRE_F64_MAX;
+  }
+  else
+  {
+    d[3] = MRE_POINTS_DIST2( d, p1 );
+  }
 }
 
 MRE_INLINE_
@@ -100,13 +107,23 @@ CalcCircumscribedSphere4Points
     MRE_POW2(p4[2]) - MRE_POW2(p1[2])
   );
 
-  MRE_SOLVE_LINER_SYSTEM_S_3(
-    a1, b1, c1, d1,
-    a2, b2, c2, d2,
-    a3, b3, c3, d3,
-    d[ 0 ], d[ 1 ], d[ 2 ]
-  );
-  d[ 3 ] = MRE_POINTS_DIST2( d, p1 );
+  if
+  (
+    MRE_SolveLinerSystem3
+    (
+      a1, b1, c1, d1,
+      a2, b2, c2, d2,
+      a3, b3, c3, d3,
+      &d[0], &d[1], &d[2]
+    )
+  )
+  {
+    d[3] = MRE_F64_MAX;
+  }
+  else
+  {
+    d[3] = MRE_POINTS_DIST2( d, p1 );
+  }
 }
 
 void
@@ -136,10 +153,10 @@ CalcCircumscribedSphere
 ({                                                \
   CalcCircumscribedSphere2Points( p1, p2, new_d );\
   if ( new_d[3] < d[3] )                          \
-    if ( IS_POINT_IN_SHPERE( op, new_d ) )        \
-      MRE_COPY_VEC4( d, new_d);                   \
+    if ( MRE_IS_POINT_IN_SPHERE( op, new_d ) )    \
+      MRE_COPY_VEC4( new_d, d);                   \
 })
-    
+
     CalcCircumscribedSphere3Points( r[0], r[1], r[2], d );
     SML_3P_SPHERE_2P( r[1], r[2], r[0] );
     SML_3P_SPHERE_2P( r[0], r[2], r[1] );
@@ -152,29 +169,31 @@ CalcCircumscribedSphere
 ({                                                \
   CalcCircumscribedSphere2Points( p1, p2, new_d );\
   if ( new_d[3] < d[3] )                          \
-    if ( IS_POINT_IN_SHPERE( op1, new_d ) )       \
-      if ( IS_POINT_IN_SHPERE( op2, new_d ) )     \
-        MRE_COPY_VEC4( d, new_d);                 \
+    if ( MRE_IS_POINT_IN_SPHERE( op1, new_d ) )   \
+      if ( MRE_IS_POINT_IN_SPHERE( op2, new_d ) ) \
+        MRE_COPY_VEC4( new_d, d );                \
 })
 #define SML_4P_SPHERE_3P( p1, p2, p3, op )\
 ({                                                    \
   CalcCircumscribedSphere3Points( p1, p2, p3, new_d );\
   if ( new_d[3] < d[3] )                              \
-    if ( IS_POINT_IN_SHPERE( op, new_d ) )            \
-      MRE_COPY_VEC4( d, new_d);                       \
+    if ( MRE_IS_POINT_IN_SPHERE( op, new_d ) ){       \
+      MRE_COPY_VEC4( new_d, d );           }          \
 })
+
     CalcCircumscribedSphere4Points( r[0], r[1], r[2], r[3], d );
+
+    SML_4P_SPHERE_3P( r[0], r[1], r[2], r[3]);
+    SML_4P_SPHERE_3P( r[0], r[1], r[3], r[2]);
+    SML_4P_SPHERE_3P( r[0], r[3], r[2], r[1]);
+    SML_4P_SPHERE_3P( r[3], r[1], r[2], r[0]);
+
     SML_4P_SPHERE_2P( r[0], r[1], r[2], r[3]);
     SML_4P_SPHERE_2P( r[0], r[2], r[1], r[3]);
     SML_4P_SPHERE_2P( r[0], r[3], r[2], r[1]);
     SML_4P_SPHERE_2P( r[1], r[2], r[0], r[3]);
     SML_4P_SPHERE_2P( r[1], r[3], r[2], r[0]);
     SML_4P_SPHERE_2P( r[2], r[3], r[0], r[1]);
-    
-    SML_4P_SPHERE_3P( r[0], r[1], r[2], r[3]);
-    SML_4P_SPHERE_3P( r[0], r[1], r[3], r[2]);
-    SML_4P_SPHERE_3P( r[0], r[3], r[2], r[1]);
-    SML_4P_SPHERE_3P( r[3], r[1], r[2], r[0]);
   }
 }
 
@@ -196,7 +215,7 @@ WelzlAlgSmallestBoundingSphere_Recursive
   else
   {
     WelzlAlgSmallestBoundingSphere_Recursive( p, ps - 1, r, rs, d );
-    if ( ! IS_POINT_IN_SHPERE( p[ ps - 1 ], d ) )
+    if ( ! MRE_IS_POINT_IN_SPHERE( p[ ps - 1 ], d ) )
     {
       MRE_COPY_VEC3( p[ ps - 1], r[ rs ] );
       WelzlAlgSmallestBoundingSphere_Recursive( p, ps - 1, r, rs + 1, d );
@@ -253,7 +272,7 @@ WelzlAlgSmallestBoundingSphere_Iterative
     }
     else if ( task[0] == 1 )
     {
-      if ( ! IS_POINT_IN_SHPERE( p[ task[1] - 1 ], d ) )
+      if ( ! MRE_IS_POINT_IN_SPHERE( p[ task[1] - 1 ], d ) )
       {
         MRE_COPY_VEC3( p[ task[1] - 1 ], r[ task[2] ] );
         

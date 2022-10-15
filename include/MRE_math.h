@@ -88,6 +88,27 @@ MRE_MulMat4
     MRE_Mat4        dest
 );
 
+extern
+MRE_I32
+MRE_SolveLinerSystem3
+(
+    MRE_F64    a1,
+    MRE_F64    b1,
+    MRE_F64    c1,
+    MRE_F64    d1,
+    MRE_F64    a2,
+    MRE_F64    b2,
+    MRE_F64    c2,
+    MRE_F64    d2,
+    MRE_F64    a3,
+    MRE_F64    b3,
+    MRE_F64    c3,
+    MRE_F64    d3,
+    MRE_F64  * dx,
+    MRE_F64  * dy,
+    MRE_F64  * dz
+);
+
 #include <MRE_math.ini>
 
 #endif

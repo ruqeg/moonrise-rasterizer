@@ -190,3 +190,59 @@ MRE_MulMat4
   dest[3][2] = a30 * b02 + a31 * b12 + a32 * b22 + a33 * b32;
   dest[3][3] = a30 * b03 + a31 * b13 + a32 * b23 + a33 * b33;
 }
+
+MRE_INLINE_
+MRE_I32
+MRE_SolveLinerSystem3
+(
+    MRE_F64    a1,
+    MRE_F64    b1,
+    MRE_F64    c1,
+    MRE_F64    d1,
+    MRE_F64    a2,
+    MRE_F64    b2,
+    MRE_F64    c2,
+    MRE_F64    d2,
+    MRE_F64    a3,
+    MRE_F64    b3,
+    MRE_F64    c3,
+    MRE_F64    d3,
+    MRE_F64  * dx,
+    MRE_F64  * dy,
+    MRE_F64  * dz
+)
+{
+  MRE_F64 D = MRE_DET3_S(
+    a1, b1, c1,
+    a2, b2, c2,
+    a3, b3, c3
+  );
+  MRE_F64 Dx = MRE_DET3_S(
+    d1, b1, c1,
+    d2, b2, c2,
+    d3, b3, c3
+  );
+  MRE_F64 Dy = MRE_DET3_S(
+    a1, d1, c1,
+    a2, d2, c2,
+    a3, d3, c3
+  );
+  MRE_F64 Dz = MRE_DET3_S(
+    a1, b1, d1,
+    a2, b2, d2,
+    a3, b3, d3
+  );
+
+  if ( D == 0.0 )
+  {
+    //TODO
+    if ( Dx*Dx + Dy*Dy + Dz*Dz == 0 )  return 1;
+    else                               return 1;
+  }
+
+  *dx = Dx / D;
+  *dy = Dy / D;
+  *dz = Dz / D;
+
+  return 0;
+}

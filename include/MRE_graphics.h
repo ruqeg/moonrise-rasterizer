@@ -1,5 +1,5 @@
-#ifndef MRE_LINE_H
-#define MRE_LINE_H
+#ifndef MRE_GRAPHICS_H
+#define MRE_GRAPHICS_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -166,4 +166,4 @@ MRE_SetPrespsectiveView
     MRE_F64  z_max
 );
 
-#endif
+#endif /* MRE_GRAPHICS_H */
