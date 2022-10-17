@@ -8,6 +8,7 @@
 #include <MRE_system.h>
 #include <MRE_math.h>
 #include <MRE_color.h>
+#include <MRE_light.h>
 
 #define MRE_MODEL_INPL    1
 #define MRE_MODEL_OUPL   -1
@@ -86,12 +87,15 @@ MRE_DrawShadedTriangle
 (
     MRE_I16           x0,
     MRE_I16           y0,
+    MRE_F64           z0,
     MRE_F64           h0,
     MRE_I16           x1,
     MRE_I16           y1,
+    MRE_F64           z1,
     MRE_F64           h1,
     MRE_I16           x2,
     MRE_I16           y2,
+    MRE_F64           z2,
     MRE_F64           h2,
     struct MRE_Color  color
 );
@@ -102,19 +106,33 @@ void
 MRE_RenderTriangle
 (
     const MRE_Vec3  v0,
+    const MRE_F64   h0,
     const MRE_Vec3  v1,
+    const MRE_F64   h1,
     const MRE_Vec3  v2,
+    const MRE_F64   h2,
     MRE_Pixel       pixel
 );
 
 extern
 void
-MRE_RenderModel
+MRE_RenderTrianglesModel
 (
     const MRE_Vec3   * const vert,
     MRE_I32                  vert_count,
     const MRE_IVec4  * const triangles,
     MRE_I32                  triangles_count
+);
+
+extern
+void
+MRE_RenderCircleModel
+(
+    const MRE_Vec3   * const vert,
+    MRE_I32                  vert_count,
+    const MRE_IVec4  * const triangles,
+    MRE_I32                  triangles_count,
+    MRE_Vec3                 center
 );
 
 //! FREE d_vert/d_triangles after func_call

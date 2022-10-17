@@ -10,7 +10,6 @@ struct MRE_Color
 };
 
 
-
 #define MRE_PIXEL_TO_COLOR( pixel, color )\
 ({                                          \
   color . r = ( pixel >> 24 ) & 0x000000FFu;\
@@ -35,7 +34,4 @@ struct MRE_Color
   | ( MRE_UI8 )(a)                     \
 )
 
-
-
-
-#endif
+#endif /* MRE_COLOR_H */

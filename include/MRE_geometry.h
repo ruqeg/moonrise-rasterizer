@@ -4,9 +4,6 @@
 #include <MRE_types.h>
 #include <MRE_math.h>
 #include <MRE_color.h>
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 extern
 void

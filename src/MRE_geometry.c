@@ -85,8 +85,6 @@ MRE_CreateSphere
   MRE_SET_VEC3( 0.0, -1.0, 0.0, dv[ v_ind + 1 ] );
  
 
-  srand( time(NULL));
-  
   for ( vp = 0; vp < vpc - 2; ++vp )
   {
     for ( hp = 0; hp < hpc; ++hp )
@@ -94,18 +92,12 @@ MRE_CreateSphere
       dt[ t_ind ][0] = ( vp + 1 ) * hpc + hp;
       dt[ t_ind ][1] = vp * hpc + hp;
       dt[ t_ind ][2] = ( vp + 1 ) * hpc + ( hp + 1 ) % hpc;
-      dt[ t_ind ][3] = MRE_RGBA_TO_PIXEL(
-        rand(), rand(), rand(), 255
-      );
       ++t_ind;
       
 
       dt[ t_ind ][0] = vp * hpc + hp;
       dt[ t_ind ][1] = vp * hpc + ( hp + 1 ) % hpc;
       dt[ t_ind ][2] = ( vp + 1 ) * hpc + ( hp + 1 ) % hpc;
-      dt[ t_ind ][3] = MRE_RGBA_TO_PIXEL(
-        rand(), rand(), rand(), 255
-      );
       ++t_ind;
     }
   }
@@ -117,9 +109,6 @@ MRE_CreateSphere
     dt[ t_ind ][0] = v_ind;
     dt[ t_ind ][1] = ( hp + 1 ) % hpc;
     dt[ t_ind ][2] = hp;
-    dt[ t_ind ][3] = MRE_RGBA_TO_PIXEL(
-      rand(), rand(), rand(), 255
-    );
     ++t_ind;
   }
 
@@ -129,9 +118,11 @@ MRE_CreateSphere
     dt[ t_ind ][0] = (vpc - 2) * hpc + hp;
     dt[ t_ind ][1] = (vpc - 2) * hpc + ( hp + 1 ) % hpc;
     dt[ t_ind ][2] = v_ind + 1;
-    dt[ t_ind ][3] = MRE_RGBA_TO_PIXEL(
-      rand(), rand(), rand(), 255
-    );
     ++t_ind;
+  }
+
+  for ( hp = 0; hp < t_ind; ++hp )
+  {
+    dt[ hp ][3] = 0xFFFFFFFFu;
   }
 }

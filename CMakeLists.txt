@@ -12,11 +12,12 @@ include_directories(include)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src)
 
 add_library(moonrise_engine
-  ${SRCROOT}/MRE_graphics.c
-  ${SRCROOT}/MRE_geometry.c
+  ${SRCROOT}/MRE_math.c
   ${SRCROOT}/MRE_system.c
   ${SRCROOT}/MRE_bounding_sphere.c
-  ${SRCROOT}/MRE_math.c
+  ${SRCROOT}/MRE_geometry.c
+  ${SRCROOT}/MRE_graphics.c
+  ${SRCROOT}/MRE_light.c
 )
 
 install(
