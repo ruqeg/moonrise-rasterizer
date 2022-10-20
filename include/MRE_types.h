@@ -48,4 +48,4 @@ typedef MRE_UI32 MRE_Pixel;
 #define MRE_INLINE_  inline __attribute__((always_inline)) 
 
 
-#endif
+#endif /* MRE_TYPES_H */

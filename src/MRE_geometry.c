@@ -1,50 +1,317 @@
 #include <MRE_geometry.h>
 
-void
-MRE_CreateCube
+MRE_I32
+MRE_ClipModel
 (
-    MRE_Vec3   * const dv,
-    MRE_IVec4  * const dt
+    const MRE_F64   * const   v,
+    MRE_I32         * const   vc,
+    const MRE_I32   * const   t,
+    MRE_I32         * const   tc,
+    const MRE_Vec4            bsphere,
+    MRE_F64         * * const dv,
+    MRE_I32         * * const dt
 )
 {
-  MRE_SET_VEC3(  1,  1,  1, dv[0] );
-  MRE_SET_VEC3( -1,  1,  1, dv[1] );
-  MRE_SET_VEC3( -1, -1,  1, dv[2] );
-  MRE_SET_VEC3(  1, -1,  1, dv[3] );
-  MRE_SET_VEC3(  1,  1, -1, dv[4] );
-  MRE_SET_VEC3( -1,  1, -1, dv[5] );
-  MRE_SET_VEC3( -1, -1, -1, dv[6] );
-  MRE_SET_VEC3(  1, -1, -1, dv[7] );
+  MRE_I32      i;
+  MRE_I32      status;
+  MRE_I32      nvc;
+  MRE_I32      ntc;
+  MRE_F64      bsphere_dist;
+  MRE_F64    * buff1_v;
+  MRE_F64    * buff2_v;
+  MRE_I32    * buff1_t;
+  MRE_I32    * buff2_t;
+
+  
 
 
-  //TODO
-  MRE_SET_VEC4( 0, 1, 2, 0x000000FFu, dt[0] );
-  MRE_SET_VEC4( 0, 2, 3, 0x000000FFu, dt[1] );
-  MRE_SET_VEC4( 4, 0, 3, 0xFFFF00FFu, dt[2] );
-  MRE_SET_VEC4( 4, 3, 7, 0xFFFF00FFu, dt[3] );
-  MRE_SET_VEC4( 5, 4, 7, 0xFF0000FFu, dt[4] );
-  MRE_SET_VEC4( 5, 7, 6, 0xFF0000FFu, dt[5] );
-  MRE_SET_VEC4( 1, 5, 6, 0x00FF00FFu, dt[6] );
-  MRE_SET_VEC4( 1, 6, 2, 0x00FF00FFu, dt[7] );
-  MRE_SET_VEC4( 4, 5, 1, 0x00F0F0FFu, dt[8] );
-  MRE_SET_VEC4( 4, 1, 0, 0x00F0F0FFu, dt[9] );
-  MRE_SET_VEC4( 2, 6, 7, 0xFFF0F0FFu, dt[10] );
-  MRE_SET_VEC4( 2, 7, 3, 0xFFF0F0FFu, dt[11] );
+  nvc = *vc;
+  ntc = *tc;
+  
+  buff1_v = malloc( nvc * _MRE_vs * sizeof( MRE_F64 ) );
+  buff1_t = malloc( ntc * 3 * sizeof( MRE_I32 ) );
+
+  memcpy( buff1_v, v, *vc * _MRE_vs * sizeof( MRE_F64 ) );
+  memcpy( buff1_t, t, *tc * 3 * sizeof( MRE_I32 ));
+
+  status = -2;
+
+  
+  for ( i = 0; i < 6; ++i )
+  {
+    bsphere_dist = MRE_PLANE_DIST( bsphere, _MRE_view_planes[ i ] );
+  
+    if ( bsphere_dist > bsphere[3] )
+    {
+      if ( status != MRE_MODEL_CLIPED )
+      {
+        status = MRE_MODEL_INPL;
+      }
+      continue;
+    }
+    if ( bsphere_dist < -bsphere[3] )
+    {
+      *vc = 0;
+      *tc = 0;
+      return MRE_MODEL_OUPL;
+    }
+     
+    status = MRE_MODEL_CLIPED;
+
+    buff2_v = malloc( 3 * nvc * _MRE_vs * sizeof( MRE_F64 ) );
+    buff2_t = malloc( 3 * ntc * 3 * sizeof( MRE_I32 ) );
+
+    MRE_ClipTrianglesAgainstPlane(
+      _MRE_view_planes[ i ],
+      buff1_v, &nvc,
+      buff1_t, &ntc,
+      buff2_v, buff2_t
+    );
+
+    MRE_SWAP( MRE_F64 *, buff1_v, buff2_v );
+    MRE_SWAP( MRE_I32 *, buff1_t, buff2_t );
+
+    free( buff2_v );
+    free( buff2_t );
+  }
+  
+  
+  *vc = nvc;
+  *tc = ntc;
+  
+  if ( buff1_v == NULL )
+  {
+    MRE_SWAP( MRE_F64 *, buff2_v, *dv );
+    MRE_SWAP( MRE_I32 *, buff2_t, *dt );
+  }
+  else
+  {
+    MRE_SWAP( MRE_F64 *, buff1_v, *dv );
+    MRE_SWAP( MRE_I32 *, buff1_t, *dt );
+  }
+  
+  return status;
 }
+
+
+#define __ADD_VERT_TO_NEW_VERTARR( ind )\
+({                                                       \
+  if ( vninds[ st[ ind ] ] == -1 )                       \
+  {                                                      \
+    vninds[ st[ ind ] ] = nvc;                           \
+    for ( MRE_I32 kc = 0; kc < _MRE_vs; ++kc )           \
+    {                                                    \
+      dv[ nvc * _MRE_vs + _MRE_vap[ VAP_P_I ] + kc ] = v[\
+        st[ ind ] * _MRE_vs + _MRE_vap[ VAP_P_I ] + kc   \
+      ];                                                 \
+    }                                                    \
+    ++nvc;                                               \
+  }                                                      \
+})
+
+#define __CALC_INTERSECTION_VERTEX( inv, otv )\
+({                                            \
+    MRE_F64 a = MRE_IntersectionPlane(        \
+      inv + _MRE_vap[ VAP_P_I ],              \
+      otv + _MRE_vap[ VAP_P_I ],              \
+      plane,                                  \
+      dv + _MRE_vs * nvc + _MRE_vap[ VAP_P_I ]\
+    );                                        \
+    MRE_VEC3_COEFF(                           \
+      inv + _MRE_vap[ VAP_C_I ],              \
+      otv + _MRE_vap[ VAP_C_I ],              \
+      a,                                      \
+      dv + _MRE_vs * nvc + _MRE_vap[ VAP_C_I ]\
+    );                                        \
+})
+
+#define __ADD_TRIANGLE_TO_NEW_TRIANGLEARR()\
+({                                             \
+  dt[ 3 * ntc ]     = vninds[ t[ 3 * j ] ];    \
+  dt[ 3 * ntc + 1 ] = vninds[ t[ 3 * j + 1 ] ];\
+  dt[ 3 * ntc + 2 ] = vninds[ t[ 3 * j + 2 ] ];\
+  ++ntc;\
+})
+
+MRE_I32
+MRE_ClipTrianglesAgainstPlane
+(
+    const MRE_Vec4           plane,
+    const MRE_F64    * const v,
+    MRE_I32          * const vc,
+    const MRE_I32    * const t,
+    MRE_I32          * const tc,
+    MRE_F64          * const dv,
+    MRE_I32          * const dt
+)
+{
+  MRE_I32    j;
+  MRE_I32    tmp;
+  MRE_I32    nvc;
+  MRE_I32    ntc;
+  MRE_IVec3  st;
+  MRE_Vec3   vdist;
+  MRE_I32    vninds[ *vc ];
+
+ 
+
+  memset( vninds, -1, *vc * sizeof( MRE_I32 ) );
+  nvc = 0;
+  ntc = 0;
+
+  for ( j = 0; j < *tc; ++j )
+  {
+    MRE_COPY_VEC3( t + j * 3, st );
+
+    _MRE_CFOR( 3, {
+      vdist[ _k ] = MRE_PLANE_DIST(
+        v + _MRE_vs * st[ _k ] + _MRE_vap[ VAP_P_I ], plane
+      );
+    } );
+    
+    
+    MRE_SORT3(
+      MRE_F64,
+      vdist[0], vdist[1], vdist[2],
+      MRE_SWAP( MRE_I32, st[0], st[1] ),
+      MRE_SWAP( MRE_I32, st[1], st[2] )
+    );
+    
+    if ( vdist[2] < 0 )  continue;
+
+    if ( vdist[1] < 0 )
+    {
+      __ADD_VERT_TO_NEW_VERTARR( 2 );
+
+      _MRE_CFOR( 2, {
+        __CALC_INTERSECTION_VERTEX( 
+          dv + _MRE_vs * vninds[ st[2] ],
+          v + _MRE_vs * st[ _k ]
+        );
+        vninds[ st[ _k ] ] = nvc++;
+      } );
+ 
+      __ADD_TRIANGLE_TO_NEW_TRIANGLEARR();
+    }
+    else if ( vdist[0] < 0 )
+    {
+      __ADD_VERT_TO_NEW_VERTARR( 1 );
+      __ADD_VERT_TO_NEW_VERTARR( 2 );
+
+      __CALC_INTERSECTION_VERTEX(
+        dv + _MRE_vs * vninds[ st[2] ],
+        v + _MRE_vs * st[0]
+      );
+      vninds[ st[0] ] = nvc++;
+
+      __ADD_TRIANGLE_TO_NEW_TRIANGLEARR();
+      
+     
+      tmp = vninds[ st[2] ];
+      vninds[ st[2] ] = vninds[ st[0] ];
+
+      
+      __CALC_INTERSECTION_VERTEX(
+        dv + _MRE_vs * vninds[ st[1] ],
+        v + _MRE_vs * st[0]
+      );
+      vninds[ st[0] ] = nvc++;
+    
+      __ADD_TRIANGLE_TO_NEW_TRIANGLEARR();
+
+
+      vninds[ st[2] ] = tmp;
+    }
+    else
+    {
+      __ADD_VERT_TO_NEW_VERTARR( 0 );
+      __ADD_VERT_TO_NEW_VERTARR( 1 );
+      __ADD_VERT_TO_NEW_VERTARR( 2 );
+    
+      __ADD_TRIANGLE_TO_NEW_TRIANGLEARR();
+    }
+  }
+  *vc = nvc;
+  *tc = ntc;
+}
+
+void
+MRE_ClipBackFaces
+(
+    const MRE_F64  * const v,
+    MRE_I32        * const vc,
+    const MRE_I32  * const t,
+    MRE_I32        * const tc,
+    MRE_F64        * const dv,
+    MRE_I32        * const dt
+)
+{
+  MRE_UI32         j;
+  MRE_I32          ntc;
+  MRE_I32          nvc;
+  MRE_IVec3        st;
+  MRE_Vec3         n;
+  const MRE_F64  * v1;
+  const MRE_F64  * v2;
+  const MRE_F64  * v3;
+  MRE_I32          vninds[ *vc ];
+
+  
+  
+  memset( vninds, -1, *vc * sizeof( MRE_I32 ) );
+
+  ntc = 0;
+  nvc = 0;
+ 
+  
+  for ( j = 0; j < *tc; ++j )
+  {
+    MRE_COPY_VEC3( t + j * 3, st );
+    v1 = v + t[ j * 3 + 0 ] * _MRE_vs + _MRE_vap[ VAP_P_I ];
+    v2 = v + t[ j * 3 + 1 ] * _MRE_vs + _MRE_vap[ VAP_P_I ];
+    v3 = v + t[ j * 3 + 2 ] * _MRE_vs + _MRE_vap[ VAP_P_I ];
+
+    MRE_TriangleNormal( v1, v2, v3, n );
+
+    if
+    (
+      MRE_SCMUL_VEC3( n, v1 ) <= 0
+      ||
+      MRE_SCMUL_VEC3( n, v2 ) <= 0
+      ||
+      MRE_SCMUL_VEC3( n, v3 ) <= 0
+    )
+    {
+      __ADD_VERT_TO_NEW_VERTARR( 0 );
+      __ADD_VERT_TO_NEW_VERTARR( 1 );
+      __ADD_VERT_TO_NEW_VERTARR( 2 );
+      
+      dt[ ntc * 3 + 0 ] = vninds[ st[0] ];
+      dt[ ntc * 3 + 1 ] = vninds[ st[1] ];
+      dt[ ntc * 3 + 2 ] = vninds[ st[2] ];
+      
+      ++ntc;
+    }
+  }
+
+  *tc = ntc;
+  *vc = nvc;
+}
+
 
 void
 MRE_CreateSphere
 (
     MRE_I32            vpc,
     MRE_I32            hpc,
-    MRE_Vec3   * const dv,
-    MRE_IVec4  * const dt
+    MRE_F64    * const dv,
+    MRE_I32    * const dt
 )
 {
   MRE_I32  vp;
   MRE_I32  hp;
-  MRE_I32  v_ind;
-  MRE_I32  t_ind;
+  MRE_I32  vind;
+  MRE_I32  tind;
   MRE_F64  xang_step;
   MRE_F64  yang_step;
   MRE_F64  sin_yang;
@@ -58,8 +325,8 @@ MRE_CreateSphere
   xang_step = 2.0 * MRE_PI / hpc;
   yang_step = MRE_PI / vpc;
     
-  v_ind = 0;  
-  t_ind = 0;
+  vind = 0;  
+  tind = 0;
   
   for ( hp = 0; hp < hpc; ++hp )
   {
@@ -74,31 +341,42 @@ MRE_CreateSphere
 
     for ( hp = 0; hp < hpc; ++hp )
     {
-      dv[ v_ind ][0] = cos_yang * cos_xangs[ hp ];
-      dv[ v_ind ][1] = sin_yang;
-      dv[ v_ind ][2] = cos_yang * sin_xangs[ hp ];
-      ++v_ind;
+      MRE_SET_VEC3(
+        cos_yang * cos_xangs[ hp ],
+        sin_yang,
+        cos_yang * sin_xangs[ hp ],
+        dv + vind * _MRE_vs + _MRE_vap[ VAP_P_I ]
+      );
+      MRE_SET_VEC3(
+        1.0, 1.0, 1.0,
+        dv + vind * _MRE_vs + _MRE_vap[ VAP_C_I ]
+      );
+      MRE_SET_VEC2(
+        1.0, 1.0,
+        dv + vind * _MRE_vs + _MRE_vap[ VAP_T_I ]
+      );
+      ++vind;
     }
   }
 
-  MRE_SET_VEC3( 0.0,  1.0, 0.0, dv[ v_ind ] );
-  MRE_SET_VEC3( 0.0, -1.0, 0.0, dv[ v_ind + 1 ] );
+  MRE_SET_VEC3( 0.0,  1.0, 0.0, dv + vind * _MRE_vs + _MRE_vap[ VAP_P_I] + 0 );
+  MRE_SET_VEC3( 0.0, -1.0, 0.0, dv + vind * _MRE_vs + _MRE_vap[ VAP_P_I] + 1 );
  
 
   for ( vp = 0; vp < vpc - 2; ++vp )
   {
     for ( hp = 0; hp < hpc; ++hp )
     {
-      dt[ t_ind ][0] = ( vp + 1 ) * hpc + hp;
-      dt[ t_ind ][1] = vp * hpc + hp;
-      dt[ t_ind ][2] = ( vp + 1 ) * hpc + ( hp + 1 ) % hpc;
-      ++t_ind;
+      dt[ 3 * tind + 0 ] = ( vp + 1 ) * hpc + hp;
+      dt[ 3 * tind + 1 ] = vp * hpc + hp;
+      dt[ 3 * tind + 2 ] = ( vp + 1 ) * hpc + ( hp + 1 ) % hpc;
+      ++tind;
       
 
-      dt[ t_ind ][0] = vp * hpc + hp;
-      dt[ t_ind ][1] = vp * hpc + ( hp + 1 ) % hpc;
-      dt[ t_ind ][2] = ( vp + 1 ) * hpc + ( hp + 1 ) % hpc;
-      ++t_ind;
+      dt[ 3 * tind + 0 ] = vp * hpc + hp;
+      dt[ 3 * tind + 1 ] = vp * hpc + ( hp + 1 ) % hpc;
+      dt[ 3 * tind + 2 ] = ( vp + 1 ) * hpc + ( hp + 1 ) % hpc;
+      ++tind;
     }
   }
 
@@ -106,23 +384,18 @@ MRE_CreateSphere
   
   for ( hp = 0; hp < hpc; ++hp )
   {
-    dt[ t_ind ][0] = v_ind;
-    dt[ t_ind ][1] = ( hp + 1 ) % hpc;
-    dt[ t_ind ][2] = hp;
-    ++t_ind;
+    dt[ 3 * tind + 0 ] = vind;
+    dt[ 3 * tind + 1 ] = ( hp + 1 ) % hpc;
+    dt[ 3 * tind + 2 ] = hp;
+    ++tind;
   }
 
  
   for ( hp = 0; hp < hpc; ++hp )
   {
-    dt[ t_ind ][0] = (vpc - 2) * hpc + hp;
-    dt[ t_ind ][1] = (vpc - 2) * hpc + ( hp + 1 ) % hpc;
-    dt[ t_ind ][2] = v_ind + 1;
-    ++t_ind;
-  }
-
-  for ( hp = 0; hp < t_ind; ++hp )
-  {
-    dt[ hp ][3] = 0xFFFFFFFFu;
+    dt[ 3 * tind + 0 ] = (vpc - 2) * hpc + hp;
+    dt[ 3 * tind + 1 ] = (vpc - 2) * hpc + ( hp + 1 ) % hpc;
+    dt[ 3 * tind + 2 ] = vind + 1;
+    ++tind;
   }
 }

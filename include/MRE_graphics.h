@@ -1,24 +1,20 @@
 #ifndef MRE_GRAPHICS_H
 #define MRE_GRAPHICS_H
 
+#include <MRE_decl.h>
+#include <MRE_math.h>
+#include <MRE_system.h>
+#include <MRE_color.h>
+#include <MRE_light.h>
+#include <MRE_alg.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <MRE_system.h>
-#include <MRE_math.h>
-#include <MRE_color.h>
-#include <MRE_light.h>
-
 #define MRE_MODEL_INPL    1
 #define MRE_MODEL_OUPL   -1
 #define MRE_MODEL_CLIPED  0
-
-
-extern  MRE_I16     MRE_buff_w;
-extern  MRE_I16     MRE_buff_h;
-extern  MRE_UI32  * MRE_buff;
-
 
 extern
 void
@@ -85,19 +81,21 @@ extern
 void 
 MRE_DrawShadedTriangle
 (
-    MRE_I16           x0,
-    MRE_I16           y0,
-    MRE_F64           z0,
-    MRE_F64           h0,
-    MRE_I16           x1,
-    MRE_I16           y1,
-    MRE_F64           z1,
-    MRE_F64           h1,
-    MRE_I16           x2,
-    MRE_I16           y2,
-    MRE_F64           z2,
-    MRE_F64           h2,
-    struct MRE_Color  color
+    MRE_I16          x0,
+    MRE_I16          y0,
+    MRE_F64          z0,
+    MRE_F64          h0,
+    const MRE_F64  * c0,
+    MRE_I16          x1,
+    MRE_I16          y1,
+    MRE_F64          z1,
+    MRE_F64          h1,
+    const MRE_F64  * c1,
+    MRE_I16          x2,
+    MRE_I16          y2,
+    MRE_F64          z2,
+    MRE_F64          h2,
+    const MRE_F64  * c2
 );
 
 
@@ -106,82 +104,35 @@ void
 MRE_RenderTriangle
 (
     const MRE_Vec3  v0,
+    const MRE_Vec3  c0,
     const MRE_F64   h0,
     const MRE_Vec3  v1,
+    const MRE_Vec3  c1,
     const MRE_F64   h1,
     const MRE_Vec3  v2,
-    const MRE_F64   h2,
-    MRE_Pixel       pixel
+    const MRE_Vec3  c2,
+    const MRE_F64   h2
 );
 
 extern
 void
 MRE_RenderTrianglesModel
 (
-    const MRE_Vec3   * const vert,
-    MRE_I32                  vert_count,
-    const MRE_IVec4  * const triangles,
-    MRE_I32                  triangles_count
+    const MRE_F64  * const v,
+    MRE_I32                vc,
+    const MRE_I32  * const t,
+    MRE_I32                tc
 );
 
 extern
 void
-MRE_RenderCircleModel
+MRE_RenderSphereModel
 (
-    const MRE_Vec3   * const vert,
-    MRE_I32                  vert_count,
-    const MRE_IVec4  * const triangles,
-    MRE_I32                  triangles_count,
-    MRE_Vec3                 center
-);
-
-//! FREE d_vert/d_triangles after func_call
-extern
-MRE_I32
-MRE_ClipModel
-(
-    const MRE_Vec3   * const   vert,
-    MRE_I32          * const   vert_count,
-    const MRE_IVec4  * const   triangles,
-    MRE_I32          * const   triangles_count,
-    const MRE_Vec4             bsphere,
-    MRE_Vec3         * * const d_vert,
-    MRE_IVec4        * * const d_triangles
-);
-
-extern
-MRE_I32
-MRE_ClipTrianglesAgainstPlane
-(
-    const MRE_Vec4           plane,
-    const MRE_Vec3   * const vert,
-    MRE_I32          * const vert_count,
-    const MRE_IVec4  * const triangles,
-    MRE_I32          * const triangles_count,
-    MRE_Vec3         * const d_vert,
-    MRE_IVec4        * const d_triangles
-);
-
-extern
-void
-MRE_ClipBackFaces
-(
-    const MRE_Vec3   * const vert,
-    MRE_I32          * const vert_count,
-    const MRE_IVec4  * const triangles,
-    MRE_I32          * const triangles_count,
-    MRE_Vec3         * const d_vert,
-    MRE_IVec4        * const d_triangles
-);
-
-extern
-void
-MRE_SetPrespsectiveView
-(
-    MRE_F64  fow_y,
-    MRE_F64  ratio,
-    MRE_F64  z_min,
-    MRE_F64  z_max
+    const MRE_F64  * const v,
+    MRE_I32                vc,
+    const MRE_I32  * const t,
+    MRE_I32                tc,
+    MRE_Vec3               center
 );
 
 #endif /* MRE_GRAPHICS_H */

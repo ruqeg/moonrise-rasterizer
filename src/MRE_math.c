@@ -111,9 +111,9 @@ MRE_INLINE_
 void
 MRE_MulMat4Vec4Vec4
 (
-    const MRE_Mat4  m,
-    const MRE_Vec4  v,
-    MRE_Vec4        dest
+    const MRE_Mat4          m,
+    const MRE_F64   * const v,
+    MRE_F64         * const dest
 )
 {
   dest[0] = m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2] + m[0][3]*v[3];
@@ -126,10 +126,10 @@ MRE_INLINE_
 void
 MRE_MulMat4Vec3Vec4
 (
-    const MRE_Mat4  m,
-    const MRE_Vec3  v,
-    const MRE_F64   s,
-    MRE_Vec4        dest
+    const MRE_Mat4          m,
+    const MRE_F64   * const v,
+    const MRE_F64           s,
+    MRE_F64         * const dest
 )
 {
   dest[0] = m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2] + m[0][3]*s;
@@ -142,10 +142,10 @@ MRE_INLINE_
 void
 MRE_MulMat4Vec3Vec3
 (
-    const MRE_Mat4  m,
-    const MRE_Vec3  v,
-    const MRE_F64   s,
-    MRE_Vec3        dest
+    const MRE_Mat4          m,
+    const MRE_F64   * const v,
+    const MRE_F64           s,
+    MRE_F64         * const dest
 )
 {
   dest[0] = m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2] + m[0][3]*s;
@@ -245,4 +245,50 @@ MRE_SolveLinerSystem3
   *dz = Dz / D;
 
   return 0;
+}
+
+MRE_INLINE_
+MRE_F64
+MRE_IntersectionPlane
+(
+    const MRE_F64   * const p1,
+    const MRE_F64   * const p2,
+    const MRE_Vec4          plane,
+    MRE_F64         * const d
+)
+{
+  MRE_F64   t; 
+
+  MRE_SUB_VEC3( p2, p1, d );
+  t = -MRE_PLANE_DIST( p1, plane ) / MRE_SCMUL_VEC3( d, plane );
+
+  d[0] = p1[0] + t * d[0];
+  d[1] = p1[1] + t * d[1];
+  d[2] = p1[2] + t * d[2];
+
+  return t;
+}
+
+MRE_INLINE_
+void
+MRE_TriangleNormal
+(
+    const MRE_F64  * const p1, 
+    const MRE_F64  * const p2, 
+    const MRE_F64  * const p3, 
+    MRE_F64        * const d
+)
+{
+  d[0] = MRE_DET2_S(
+    p2[1] - p1[1],  p2[2] - p1[2],
+    p3[1] - p1[1],  p3[2] - p1[2] 
+  );
+  d[1] = -MRE_DET2_S(
+    p2[0] - p1[0],  p2[2] - p1[2],
+    p3[0] - p1[0],  p3[2] - p1[2] 
+  );
+  d[2] = MRE_DET2_S(
+    p2[0] - p1[0],  p2[1] - p1[1],
+    p3[0] - p1[0],  p3[1] - p1[1] 
+  );
 }

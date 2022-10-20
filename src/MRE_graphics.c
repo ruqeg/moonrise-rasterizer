@@ -1,45 +1,5 @@
 #include <MRE_graphics.h>
 
-
-
-MRE_F64   * _MRE_z_buff;
-MRE_Mat4    _MRE_projection_mat;
-MRE_Vec4    _MRE_view_planes[ 6 ];
-
-
-
-void
-MRE_InitZBuffer
-(
-
-)
-{
-  MRE_DestroyZBuffer();
-  _MRE_z_buff = malloc( MRE_buff_w * MRE_buff_h * sizeof( MRE_F64 ) );
-  MRE_ClearZBuffer();
-}
-
-void
-MRE_ClearZBuffer
-(
-
-)
-{
-  for ( MRE_I32 i = 0; i < MRE_buff_w * MRE_buff_h; ++i )
-  {
-    _MRE_z_buff[ i ] = 0;
-  }
-}
-
-void
-MRE_DestroyZBuffer
-(
-
-)
-{
-  if ( _MRE_z_buff != NULL )  free( _MRE_z_buff );
-}
-
 void
 MRE_DrawLine
 (
@@ -207,19 +167,21 @@ MRE_DrawFilledTriangle
 void
 MRE_DrawShadedTriangle
 (
-    MRE_I16           x0,
-    MRE_I16           y0,
-    MRE_F64           z0,
-    MRE_F64           h0,
-    MRE_I16           x1,
-    MRE_I16           y1,
-    MRE_F64           z1,
-    MRE_F64           h1,
-    MRE_I16           x2,
-    MRE_I16           y2,
-    MRE_F64           z2,
-    MRE_F64           h2,
-    struct MRE_Color  color
+    MRE_I16          x0,
+    MRE_I16          y0,
+    MRE_F64          z0,
+    MRE_F64          h0,
+    const MRE_F64  * c0,
+    MRE_I16          x1,
+    MRE_I16          y1,
+    MRE_F64          z1,
+    MRE_F64          h1,
+    const MRE_F64  * c1,
+    MRE_I16          x2,
+    MRE_I16          y2,
+    MRE_F64          z2,
+    MRE_F64          h2,
+    const MRE_F64  * c2
 )
 {
   MRE_I16    m;
@@ -241,7 +203,12 @@ MRE_DrawShadedTriangle
   MRE_F64  * zxs;
   MRE_F64  * zsl;
   MRE_F64  * zsr;
-
+  
+  MRE_F64  * cs012[3];
+  MRE_F64  * cs02[3];
+  MRE_F64  * cxs[3];
+  MRE_F64  * csl[3];
+  MRE_F64  * csr[3];
   
 
   if ( y1 < y0 )
@@ -250,13 +217,15 @@ MRE_DrawShadedTriangle
     MRE_SWAP( MRE_I16, x0, x1 );
     MRE_SWAP( MRE_F64, h0, h1 );
     MRE_SWAP( MRE_F64, z0, z1 );
+    MRE_SWAP( const MRE_F64 *, c0, c1 );
   }
   if ( y2 < y0 )
   {
     MRE_SWAP( MRE_I16, y0, y2 );
     MRE_SWAP( MRE_I16, x0, x2 );
     MRE_SWAP( MRE_F64, h0, h2 );
-    MRE_SWAP( MRE_F64, z1, z2 );
+    MRE_SWAP( MRE_F64, z0, z2 );
+    MRE_SWAP( const MRE_F64 *, c0, c2 );
   }
   if ( y2 < y1 )
   {
@@ -264,24 +233,42 @@ MRE_DrawShadedTriangle
     MRE_SWAP( MRE_I16, x1, x2 );
     MRE_SWAP( MRE_F64, h1, h2 );
     MRE_SWAP( MRE_F64, z1, z2 );
+    MRE_SWAP( const MRE_F64 *, c1, c2 );
   }
 
   xs012 = alloca( ( y2 - y0 + 1 ) * sizeof( MRE_I16 ) );
   hs012 = alloca( ( y2 - y0 + 1 ) * sizeof( MRE_F64 ) );
   zs012 = alloca( ( y2 - y0 + 1 ) * sizeof( MRE_F64 ) );
+  _MRE_CFOR( 3, {
+    cs012[ _k ] = alloca( ( y2 - y0 + 1 ) * sizeof( MRE_F64 ) );
+  } );
   xs02  = alloca( ( y2 - y0 + 1 ) * sizeof( MRE_I16 ) );
   hs02  = alloca( ( y2 - y0 + 1 ) * sizeof( MRE_F64 ) );
   zs02  = alloca( ( y2 - y0 + 1 ) * sizeof( MRE_F64 ) );
+  _MRE_CFOR( 3, {
+    cs02[ _k ] = alloca( ( y2 - y0 + 1 ) * sizeof( MRE_F64 ) );
+  } );
     
   MRE_Interpolate_I16_I16( xs012, y0, x0, y1, x1 );
   MRE_Interpolate_I16_F64( hs012, y0, h0, y1, h1 );
   MRE_Interpolate_I16_F64( zs012, y0, z0, y1, z1 );
+  _MRE_CFOR( 3, {
+    MRE_Interpolate_I16_F64( cs012[ _k ], y0, c0[ _k ], y1, c1[ _k ] ); 
+  } );
   MRE_Interpolate_I16_I16( xs012 + ( y1 - y0 ), y1, x1, y2, x2 );
   MRE_Interpolate_I16_F64( hs012 + ( y1 - y0 ), y1, h1, y2, h2 );
   MRE_Interpolate_I16_F64( zs012 + ( y1 - y0 ), y1, z1, y2, z2 );
+  _MRE_CFOR( 3, {
+    MRE_Interpolate_I16_F64( 
+      cs012[ _k ] + ( y1 - y0 ), y1, c1[ _k ], y2, c2[ _k ]
+    ); 
+  } );
   MRE_Interpolate_I16_I16( xs02, y0, x0, y2, x2 );
   MRE_Interpolate_I16_F64( hs02, y0, h0, y2, h2 );
   MRE_Interpolate_I16_F64( zs02, y0, z0, y2, z2 );
+  _MRE_CFOR( 3, {
+    MRE_Interpolate_I16_F64( cs02[ _k ], y0, c0[ _k ], y2, c2[ _k ] ) ;
+  } );
 
   m = ( y2 - y0 ) / 2;
 
@@ -295,6 +282,11 @@ MRE_DrawShadedTriangle
     
     zsl = zs02;
     zsr = zs012;
+    
+    _MRE_CFOR( 3, {
+      csl[ _k ] = cs02[ _k ];
+      csr[ _k ] = cs012[ _k ];
+    } );
   }
   else
   {
@@ -306,6 +298,11 @@ MRE_DrawShadedTriangle
     
     zsl = zs012;
     zsr = zs02;
+    
+    _MRE_CFOR( 3, {
+      csl[ _k ] = cs012[ _k ];
+      csr[ _k ] = cs02[ _k ];
+    } );
   }
 
   for ( y = y0; y < y2; ++y )
@@ -326,16 +323,25 @@ MRE_DrawShadedTriangle
       x_l, zsl[ y - y0 ], 
       x_r, zsr[ y - y0 ]
     );
+    
+    _MRE_CFOR( 3, {
+      cxs[ _k ] = alloca ( ( x_r - x_l + 1 ) * sizeof(  MRE_F64 ) );
+      MRE_Interpolate_I16_F64(
+        cxs[ _k ], 
+        x_l, csl[ _k ][ y - y0 ], 
+        x_r, csr[ _k ][ y - y0 ]
+      );
+    } );
 
     for ( x = x_l; x <= x_r; ++x )
     {
       if ( zxs[ x - x_l ] > _MRE_z_buff[ MRE_buff_w * y + x ] + MRE_F64_MIN )
       {
         MRE_buff[ MRE_buff_w * y + x ] = MRE_RGBA_TO_PIXEL(
-          color . r * hxs[ x - x_l ],
-          color . g * hxs[ x - x_l ],
-          color . b * hxs[ x - x_l ],
-          color . a
+          255 * cxs[0][ x - x_l ] * hxs[ x - x_l ],
+          255 * cxs[1][ x - x_l ] * hxs[ x - x_l ],
+          255 * cxs[2][ x - x_l ] * hxs[ x - x_l ],
+          255
         );
         _MRE_z_buff[ MRE_buff_w * y + x ] = zxs[ x - x_l ];
       }
@@ -349,476 +355,149 @@ void
 MRE_RenderTriangle
 (
     const MRE_Vec3  v0,
+    const MRE_Vec3  c0,
     const MRE_F64   h0,
     const MRE_Vec3  v1,
+    const MRE_Vec3  c1,
     const MRE_F64   h1,
     const MRE_Vec3  v2,
-    const MRE_F64   h2,
-    MRE_Pixel       pixel
+    const MRE_Vec3  c2,
+    const MRE_F64   h2
 )
 {
-  struct MRE_Color c;
-  MRE_PIXEL_TO_COLOR( pixel, c );
+  //TODO better code???
 
   MRE_DrawShadedTriangle(
     round( ( v0[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ) ),
     round( ( v0[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ) ),
     1.0 / v0[2],
     h0,
+    c0,
     round( ( v1[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ) ),
     round( ( v1[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ) ),
     1.0 / v1[2],
     h1,
+    c1,
     round( ( v2[0] * 0.5 + 0.5 ) * ( MRE_buff_w - 1 ) ),
     round( ( v2[1] * 0.5 + 0.5 ) * ( MRE_buff_h - 1 ) ),
     1.0 / v2[2],
     h2,
-    c
+    c2
   );
 }
 
 void
 MRE_RenderTrianglesModel
 (
-    const MRE_Vec3   * const vert,
-    MRE_I32                  vert_count,
-    const MRE_IVec4  * const triangles,
-    MRE_I32                  triangles_count
+    const MRE_F64  * const v,
+    MRE_I32                vc,
+    const MRE_I32  * const t,
+    MRE_I32                tc
 )
 {
-  MRE_UI32    i;
-  MRE_Vec3    n;
-  MRE_Vec4  * proj_vert;
+  MRE_UI32          i;
+  MRE_Vec3          n;
+  MRE_Vec4        * vproj;
+  const MRE_F64   * v0;
+  const MRE_F64   * v1;
+  const MRE_F64   * v2;
 
 
-  proj_vert  = malloc( vert_count * sizeof( MRE_Vec4 ) );
+  vproj = malloc( vc * sizeof( MRE_Vec4 ) );
  
-
-  for ( i = 0; i < vert_count; ++i )
+  for ( i = 0; i < vc; ++i )
   {
-    MRE_MulMat4Vec3Vec4( _MRE_projection_mat, vert[ i ], 1.0, proj_vert[ i ] );
-    MRE_DIV_VEC3_S( proj_vert[ i ], proj_vert[ i ][3], proj_vert[ i ] );
+    MRE_MulMat4Vec3Vec4( 
+      _MRE_projection_mat, 
+      v + i * _MRE_vs + _MRE_vap[ VAP_P_I ], 1.0, 
+      vproj[ i ]
+    );
+    MRE_DIV_VEC3_S(
+      vproj[ i ], vproj[ i ][3], vproj[ i ]
+    );
   }
-
-  for ( i = 0; i < triangles_count; ++i )
+    
+  for ( i = 0; i < tc; ++i )
   {
-    MRE_TRIANGLE_NORMAL(
-      vert[ triangles[ i ][0] ], 
-      vert[ triangles[ i ][1] ],
-      vert[ triangles[ i ][2] ],
+    v0 = v + t[ 3 * i + 0 ] * _MRE_vs;
+    v1 = v + t[ 3 * i + 1 ] * _MRE_vs;
+    v2 = v + t[ 3 * i + 2 ] * _MRE_vs;
+
+    MRE_TriangleNormal(
+      v0 + _MRE_vap[ VAP_P_I ], 
+      v1 + _MRE_vap[ VAP_P_I ], 
+      v2 + _MRE_vap[ VAP_P_I ], 
       n
     );
 
     MRE_RenderTriangle(
-      proj_vert[ triangles[ i ][0] ],
-      MRE_GetVertIlluminaceLevel( vert[ triangles[ i ][0] ], n ),
-      proj_vert[ triangles[ i ][1] ],
-      MRE_GetVertIlluminaceLevel( vert[ triangles[ i ][1] ], n ),
-      proj_vert[ triangles[ i ][2] ],
-      MRE_GetVertIlluminaceLevel( vert[ triangles[ i ][2] ], n ),
-      triangles[ i ][3]
+      vproj[ t[ 3 * i + 0 ] ],
+      v0 + _MRE_vap[ VAP_C_I ],
+      MRE_GetVertIlluminaceLevel( v0 + _MRE_vap[ VAP_P_I ], n ),
+      vproj[ t[ 3 * i + 1 ] ],
+      v1 + _MRE_vap[ VAP_C_I ],
+      MRE_GetVertIlluminaceLevel( v1 + _MRE_vap[ VAP_P_I ], n ),
+      vproj[ t[ 3 * i + 2 ] ],
+      v2 + _MRE_vap[ VAP_C_I ],
+      MRE_GetVertIlluminaceLevel( v2 + _MRE_vap[ VAP_P_I ], n )
     );
   }
 
-  free( proj_vert );
+  free( vproj );
 }
 
 void
-MRE_RenderCircleModel
+MRE_RenderSphereModel
 (
-    const MRE_Vec3   * const vert,
-    MRE_I32                  vert_count,
-    const MRE_IVec4  * const triangles,
-    MRE_I32                  triangles_count,
-    MRE_Vec3                 center
+    const MRE_F64  * const v,
+    MRE_I32                vc,
+    const MRE_I32  * const t,
+    MRE_I32                tc,
+    MRE_Vec3               center
 )
 {
-  MRE_UI32    i;
-  MRE_Vec3    n;
-  MRE_F64   * verts_ilmc;
-  MRE_Vec4  * proj_vert;
+  MRE_UI32          i;
+  MRE_Vec3          n;
+  const MRE_F64   * v0;
+  MRE_F64         * vilmc;
+  MRE_Vec4        * vproj;
 
 
-  verts_ilmc = malloc( vert_count * sizeof( MRE_F64 ) );
-  proj_vert  = malloc( vert_count * sizeof( MRE_Vec4 ) );
+  vproj = malloc( vc * sizeof( MRE_Vec4 ) );
+  vilmc = malloc( vc * sizeof( MRE_F64 ) );
  
 
-  for ( i = 0; i < vert_count; ++i )
+  for ( i = 0; i < vc; ++i )
   {
-    MRE_MulMat4Vec3Vec4( _MRE_projection_mat, vert[ i ], 1.0, proj_vert[ i ] );
-    MRE_DIV_VEC3_S( proj_vert[ i ], proj_vert[ i ][3], proj_vert[ i ] );
+    v0 = v + i * _MRE_vs;
+    MRE_MulMat4Vec3Vec4( 
+      _MRE_projection_mat, 
+      v0 + _MRE_vap[ VAP_P_I ], 1.0, 
+      vproj[ i ]
+    );
+    MRE_DIV_VEC3_S(
+      vproj[ i ], vproj[ i ][3], vproj[ i ]
+    );
 
-    MRE_SUB_VEC3( vert[ i ], center, n );
-    verts_ilmc[ i ] = MRE_GetVertIlluminaceLevel( vert[ i ], n );
+    MRE_SUB_VEC3( v0 + _MRE_vap[ VAP_P_I ], center, n );
+    vilmc[ i ] = MRE_GetVertIlluminaceLevel( v0 + _MRE_vap[ VAP_P_I ], n );
   }
 
-  for ( i = 0; i < triangles_count; ++i )
+  for ( i = 0; i < tc; ++i )
   {
     MRE_RenderTriangle(
-      proj_vert[ triangles[ i ][0] ],
-      verts_ilmc[ triangles[ i ][0] ],
-      proj_vert[ triangles[ i ][1] ],
-      verts_ilmc[ triangles[ i ][1] ],
-      proj_vert[ triangles[ i ][2] ],
-      verts_ilmc[ triangles[ i ][2] ],
-      triangles[ i ][3]
+      vproj[ t[ 3 * i + 0 ] ],
+      v + t[ 3 * i + 0 ] * _MRE_vs + _MRE_vap[ VAP_C_I ],
+      vilmc[ t[ 3 * i + 0 ] ],
+      vproj[ t[ 3 * i + 1 ] ],
+      v + t[ 3 * i + 1 ] * _MRE_vs + _MRE_vap[ VAP_C_I ],
+      vilmc[ t[ 3 * i + 1 ] ],
+      vproj[ t[ 3 * i + 2 ] ],
+      v + t[ 3 * i + 2 ] * _MRE_vs + _MRE_vap[ VAP_C_I ],
+      vilmc[ t[ 3 * i + 2 ] ]
     );
   }
 
-  free( verts_ilmc );
-  free( proj_vert );
-}
-
-
-MRE_I32
-MRE_ClipModel
-(
-    const MRE_Vec3   * const   vert,
-    MRE_I32          * const   vert_count,
-    const MRE_IVec4  * const   triangles,
-    MRE_I32          * const   triangles_count,
-    const MRE_Vec4             bsphere,
-    MRE_Vec3         * * const d_vert,
-    MRE_IVec4        * * const d_triangles
-)
-{
-  MRE_I32      i;
-  MRE_I32      status;
-  MRE_I32      new_vert_count;
-  MRE_I32      new_triangles_count;
-  MRE_F64      bsphere_dist;
-  MRE_Vec3   * buff1_vert;
-  MRE_Vec3   * buff2_vert;
-  MRE_IVec4  * buff1_triangles;
-  MRE_IVec4  * buff2_triangles;
-
-  
-
-  
-  new_vert_count      = *vert_count;
-  new_triangles_count = *triangles_count;
-  
-  buff1_vert      = malloc( new_vert_count * sizeof( MRE_Vec3 ) );
-  buff1_triangles = malloc( new_triangles_count * sizeof( MRE_IVec4 ) );
-
-  memcpy( buff1_vert, vert, *vert_count * sizeof( MRE_Vec3 ));
-  memcpy( buff1_triangles, triangles, *triangles_count * sizeof( MRE_IVec4 ));
-
-  status = -2;
-
-  
-  for ( i = 0; i < 6; ++i )
-  {
-    bsphere_dist = MRE_PLANE_DIST( bsphere, _MRE_view_planes[ i ] );
-  
-    if ( bsphere_dist > bsphere[3] )
-    {
-      if ( status != MRE_MODEL_CLIPED )
-      {
-        status = MRE_MODEL_INPL;
-      }
-      continue;
-    }
-    if ( bsphere_dist < -bsphere[3] )
-    {
-      *vert_count = 0;
-      *triangles_count = 0;
-      return MRE_MODEL_OUPL;
-    }
-   
-    status = MRE_MODEL_CLIPED;
-
-    buff2_vert      = malloc( 3 * new_vert_count * sizeof( MRE_Vec3 ) );
-    buff2_triangles = malloc( 3 * new_triangles_count * sizeof( MRE_IVec4 ) );
-
-    //TODO input vert 
-    MRE_ClipTrianglesAgainstPlane(
-      _MRE_view_planes[ i ],
-      buff1_vert, &new_vert_count,
-      buff1_triangles, &new_triangles_count,
-      buff2_vert, buff2_triangles
-    );
-
-    MRE_SWAP( MRE_Vec3 *, buff1_vert, buff2_vert );
-    MRE_SWAP( MRE_IVec4 *, buff1_triangles, buff2_triangles );
-
-    free( buff2_vert );
-    free( buff2_triangles );
-  }
-  
-  
-  *vert_count      = new_vert_count;
-  *triangles_count = new_triangles_count;
-  
-  if ( buff1_vert == NULL )
-  {
-    printf("N: %i\n", buff1_triangles );
-    MRE_SWAP( MRE_Vec3 *, buff2_vert, *d_vert );
-    MRE_SWAP( MRE_IVec4 *, buff2_triangles, *d_triangles );
-  }
-  else
-  {
-    MRE_SWAP( MRE_Vec3 *, buff1_vert, *d_vert );
-    MRE_SWAP( MRE_IVec4 *, buff1_triangles, *d_triangles );
-  }
-  
-  return status;
-}
-
-
-#define __ADD_VERT_TO_NEW_VERTARR( ind )\
-({                                             \
-  if ( vert_inds[ v_ind[ ind ] ] == -1 )       \
-  {                                            \
-    vert_inds[ v_ind[ ind ] ] = new_vert_count;\
-    MRE_COPY_VEC3(                             \
-      vert[ v_ind[ ind ] ],                    \
-      d_vert[ new_vert_count ]                 \
-    );                                         \
-    ++new_vert_count;                          \
-  }                                            \
-})
-
-MRE_I32
-MRE_ClipTrianglesAgainstPlane
-(
-    const MRE_Vec4           plane,
-    const MRE_Vec3   * const vert,
-    MRE_I32          * const vert_count,
-    const MRE_IVec4  * const triangles,
-    MRE_I32          * const triangles_count,
-    MRE_Vec3         * const d_vert,
-    MRE_IVec4        * const d_triangles
-)
-{
-  MRE_I32    j;
-  MRE_I32    tmp;
-  MRE_I32    new_vert_count;
-  MRE_I32    new_triangles_count;
-  MRE_IVec3  v_ind;
-  MRE_Vec3   v_dist;
-  MRE_I32    vert_inds[ *vert_count ];
-
- 
-
-  memset( vert_inds, -1, *vert_count * sizeof( MRE_I32 ) );
-  new_vert_count      = 0;
-  new_triangles_count = 0;
-
-  for ( j = 0; j < *triangles_count; ++j )
-  {
-    MRE_COPY_VEC3( triangles[ j ], v_ind );
-    v_dist[0] = MRE_PLANE_DIST( vert[ v_ind[0] ], plane );
-    v_dist[1] = MRE_PLANE_DIST( vert[ v_ind[1] ], plane );
-    v_dist[2] = MRE_PLANE_DIST( vert[ v_ind[2] ], plane );
-    
-    
-    MRE_SORT3(
-      MRE_F64,
-      v_dist[0], v_dist[1], v_dist[2],
-      MRE_SWAP( MRE_I32, v_ind[0], v_ind[1] ),
-      MRE_SWAP( MRE_I32, v_ind[1], v_ind[2] )
-    );
-    
-    if ( v_dist[2] < 0 )  continue;
-
-    if ( v_dist[1] < 0 )
-    {
-      __ADD_VERT_TO_NEW_VERTARR( 2 );
-
-      MRE_INTERSECTION_PLANE(
-        d_vert[ vert_inds[ v_ind[2] ] ],
-        vert[ v_ind[1] ],
-        plane,
-        d_vert[ new_vert_count ]
-      );
-      vert_inds[ v_ind[1] ] = new_vert_count++;
-      
-      MRE_INTERSECTION_PLANE(
-        d_vert[ vert_inds[ v_ind[2] ] ], 
-        vert[ v_ind[0] ], 
-        plane,
-        d_vert[ new_vert_count ]
-      );
-      vert_inds[ v_ind[0] ] = new_vert_count++;
-      
-      d_triangles[ new_triangles_count ][0] = vert_inds[ triangles[ j ][0] ];
-      d_triangles[ new_triangles_count ][1] = vert_inds[ triangles[ j ][1] ];
-      d_triangles[ new_triangles_count ][2] = vert_inds[ triangles[ j ][2] ];
-      d_triangles[ new_triangles_count ][3] = triangles[ j ][3];
-      
-      ++new_triangles_count;
-    }
-    else if ( v_dist[0] < 0 )
-    {
-      __ADD_VERT_TO_NEW_VERTARR( 1 );
-      __ADD_VERT_TO_NEW_VERTARR( 2 );
-
-      MRE_INTERSECTION_PLANE(
-        d_vert[ vert_inds[ v_ind[2] ] ],
-        vert[ v_ind[0] ],
-        plane,
-        d_vert[ new_vert_count ]
-      );
-      vert_inds[ v_ind[0] ] = new_vert_count++;
-
-      d_triangles[ new_triangles_count ][0] = vert_inds[ triangles[ j ][0] ];
-      d_triangles[ new_triangles_count ][1] = vert_inds[ triangles[ j ][1] ];
-      d_triangles[ new_triangles_count ][2] = vert_inds[ triangles[ j ][2] ];
-      d_triangles[ new_triangles_count ][3] = triangles[ j ][3];
-      ++new_triangles_count;
-      
-      tmp = vert_inds[ v_ind[2] ];
-      vert_inds[ v_ind[2] ] = vert_inds[ v_ind[0] ];
-
-      MRE_INTERSECTION_PLANE(
-        d_vert[ vert_inds[ v_ind[1] ] ], 
-        vert[ v_ind[0] ],
-        plane,
-        d_vert[ new_vert_count ]
-      );
-      vert_inds[ v_ind[0] ] = new_vert_count++;
-      
-      
-      d_triangles[ new_triangles_count ][0] = vert_inds[ triangles[ j ][0] ];
-      d_triangles[ new_triangles_count ][1] = vert_inds[ triangles[ j ][1] ];
-      d_triangles[ new_triangles_count ][2] = vert_inds[ triangles[ j ][2] ];
-      d_triangles[ new_triangles_count ][3] = triangles[ j ][3];
-      
-      ++new_triangles_count;
-      vert_inds[ v_ind[2] ] = tmp;
-    }
-    else
-    {
-      __ADD_VERT_TO_NEW_VERTARR( 0 );
-      __ADD_VERT_TO_NEW_VERTARR( 1 );
-      __ADD_VERT_TO_NEW_VERTARR( 2 );
-    
-      d_triangles[ new_triangles_count ][0] = vert_inds[ triangles[ j ][0] ];
-      d_triangles[ new_triangles_count ][1] = vert_inds[ triangles[ j ][1] ];
-      d_triangles[ new_triangles_count ][2] = vert_inds[ triangles[ j ][2] ];
-      d_triangles[ new_triangles_count ][3] = triangles[ j ][3];
-      ++new_triangles_count;
-    }
-  }
-  *vert_count = new_vert_count;
-  *triangles_count = new_triangles_count;
-}
-
-
-void
-MRE_ClipBackFaces
-(
-    const MRE_Vec3   * const vert,
-    MRE_I32          * const vert_count,
-    const MRE_IVec4  * const triangles,
-    MRE_I32          * const triangles_count,
-    MRE_Vec3         * const d_vert,
-    MRE_IVec4        * const d_triangles
-)
-{
-  MRE_UI32         j;
-  MRE_I32          new_triangles_count;
-  MRE_I32          new_vert_count;
-  MRE_IVec3        v_ind;
-  MRE_Vec3         n;
-  const MRE_F64  * v1;
-  const MRE_F64  * v2;
-  const MRE_F64  * v3;
-  MRE_I32          vert_inds[ *vert_count ];
-
-  
-  
-  memset( vert_inds, -1, *vert_count * sizeof( MRE_I32 ) );
-
-  new_triangles_count = 0;
-  new_vert_count      = 0;
- 
-  
-  for ( j = 0; j < *triangles_count; ++j )
-  {
-    MRE_COPY_VEC3( triangles[ j ], v_ind );
-
-    v1 = vert[ triangles[ j ][0] ];
-    v2 = vert[ triangles[ j ][1] ];
-    v3 = vert[ triangles[ j ][2] ];
-
-    MRE_TRIANGLE_NORMAL( v1, v2, v3, n );
-
-    if
-    (
-      MRE_SCMUL_VEC3( n, v1 ) <= 0
-      ||
-      MRE_SCMUL_VEC3( n, v2 ) <= 0
-      ||
-      MRE_SCMUL_VEC3( n, v3 ) <= 0
-    )
-    {
-      __ADD_VERT_TO_NEW_VERTARR( 0 );
-      __ADD_VERT_TO_NEW_VERTARR( 1 );
-      __ADD_VERT_TO_NEW_VERTARR( 2 );
-      
-      d_triangles[ new_triangles_count ][0] = vert_inds[ v_ind[0] ];
-      d_triangles[ new_triangles_count ][1] = vert_inds[ v_ind[1] ];
-      d_triangles[ new_triangles_count ][2] = vert_inds[ v_ind[2] ];
-      d_triangles[ new_triangles_count ][3] = triangles[ j ][3];
-      
-
-      ++new_triangles_count;
-    }
-  }
-
-  *triangles_count = new_triangles_count;
-  *vert_count      = new_vert_count;
-}
-
-void
-MRE_SetPrespsectiveView
-(
-    MRE_F64  fowy,
-    MRE_F64  aspect,
-    MRE_F64  z_min,
-    MRE_F64  z_max
-)
-{
-  const MRE_F64 fowx_2 = atan( aspect * tan( fowy * 0.5 ) );
-
-  MRE_PerspectiveMat4(
-    fowy,
-    aspect,
-    z_min,
-    z_max,
-    _MRE_projection_mat
-  );
-
-  _MRE_view_planes[0][0] =  0;
-  _MRE_view_planes[0][1] =  0;
-  _MRE_view_planes[0][2] =  1;
-  _MRE_view_planes[0][3] = -z_min;
-
-  _MRE_view_planes[1][0] =  0;
-  _MRE_view_planes[1][1] =  0;
-  _MRE_view_planes[1][2] = -1;
-  _MRE_view_planes[1][3] =  z_max;
-
-  
-  _MRE_view_planes[2][0] =  0;
-  _MRE_view_planes[2][1] =  cos( fowy * 0.5 );
-  _MRE_view_planes[2][2] =  sin( fowy * 0.5 );
-  _MRE_view_planes[2][3] =  0;
-  
-  _MRE_view_planes[3][0] =  0;
-  _MRE_view_planes[3][1] = -( _MRE_view_planes[2][1] );
-  _MRE_view_planes[3][2] =  _MRE_view_planes[2][2];
-  _MRE_view_planes[3][3] =  0;
-
-  _MRE_view_planes[4][0] =  cos( fowx_2 );
-  _MRE_view_planes[4][1] =  0;
-  _MRE_view_planes[4][2] =  sin( fowx_2 );
-  _MRE_view_planes[4][3] =  0;
-  
-  _MRE_view_planes[5][0] = -( _MRE_view_planes[4][0] );
-  _MRE_view_planes[5][1] =  0;
-  _MRE_view_planes[5][2] =  _MRE_view_planes[4][2];
-  _MRE_view_planes[5][3] =  0;
+  free( vilmc );
+  free( vproj );
 }

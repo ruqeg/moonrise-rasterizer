@@ -1,13 +1,9 @@
 #ifndef MRE_BOUNDING_SPHERE
 #define MRE_BOUNDING_SPHERE
 
-#include <MRE_types.h>
 #include <MRE_math.h>
 
-#include <math.h>
-
 #include <stdlib.h>
-#include <float.h>
 
 #define MRE_RECR_SBS_FLAG  0
 #define MRE_ITER_SBS_FLAG  !0
@@ -22,4 +18,4 @@ MRE_SmallestBoundingSphere
     MRE_Vec4          d
 );
 
-#endif
+#endif /* MRE_BOUNDING_SPHERE */
