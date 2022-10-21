@@ -20,11 +20,8 @@ MRE_ClipModel
 (
     const MRE_F64   * const   v,
     MRE_I32         * const   vc,
-    const MRE_I32   * const   t,
-    MRE_I32         * const   tc,
     const MRE_Vec4            bsphere,
-    MRE_F64         * * const dv,
-    MRE_I32         * * const dt
+    MRE_F64         * * const dv
 );
 
 extern
@@ -34,10 +31,7 @@ MRE_ClipTrianglesAgainstPlane
     const MRE_Vec4           plane,
     const MRE_F64    * const v,
     MRE_I32          * const vc,
-    const MRE_I32    * const t,
-    MRE_I32          * const tc,
-    MRE_F64          * const dv,
-    MRE_I32          * const dt
+    MRE_F64          * const dv
 );
 
 extern
@@ -46,20 +40,7 @@ MRE_ClipBackFaces
 (
     const MRE_F64  * const v,
     MRE_I32        * const vc,
-    const MRE_I32  * const t,
-    MRE_I32        * const tc,
-    MRE_F64        * const dv,
-    MRE_I32        * const dt
-);
-
-extern
-void
-MRE_CreateSphere
-(
-    MRE_I32            vpc,
-    MRE_I32            hpc,
-    MRE_F64    * const dv,
-    MRE_I32    * const dt
+    MRE_F64        * const dv
 );
 
 #endif /* MRE_GEOMETRY_H */

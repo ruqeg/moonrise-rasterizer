@@ -72,8 +72,8 @@ MRE_INTEROPLATE_TEMPLATE_DECLARATION
 })
 
 #define _MRE_CFOR( lim, code )\
-({                                            \
-  for ( MRE_I32 _k = 0; _k < lim; ++_k )  code\
+({                                       \
+  for ( int _k = 0; _k < lim; ++_k ) code\
 })
 
 #endif /* MRE_SYSTEM_H */

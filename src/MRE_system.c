@@ -1,18 +1,106 @@
 #include <MRE_system.h>
 
 void
-MRE_VertexAttribPointer
+MRE_SetBuffer
 (
-    MRE_I32  vs,
-    MRE_I32  vap_offset_v,
-    MRE_I32  vap_offset_c,
-    MRE_I32  vap_offset_t
+    MRE_UI32  * const buff,
+    MRE_I16           w,
+    MRE_I16           h
+)
+{
+  _MRE_buff = buff;
+  _MRE_buff_w = w;
+  _MRE_buff_h = h;
+}
+
+void
+MRE_SetVertexAttribSize
+(
+    MRE_I32  vs
 )
 {
   _MRE_vs = vs;
-  _MRE_vap[ VAP_P_I ] = vap_offset_v;
-  _MRE_vap[ VAP_C_I ] = vap_offset_c;
-  _MRE_vap[ VAP_T_I ] = vap_offset_t;
+}
+
+void
+MRE_BindTexture
+(
+    const struct MRE_Texture  * const t
+)
+{
+  _MRE_texture = t;
+}
+
+void
+MRE_BindVertexShader
+(
+    MRE_VertShader  shader
+)
+{
+  _MRE_vertex_shader = shader;
+}
+
+void
+MRE_BindFragmentShader
+(
+    MRE_FragShader  shader
+)
+{
+  _MRE_fragment_shader = shader;
+}
+
+void
+MRE_DrawArrays
+(
+    MRE_I32                 type,
+    const MRE_F64   * const v,
+    MRE_I32                 vc,
+    const MRE_Vec4          bsphere
+)
+{
+  MRE_I32    j;
+  MRE_I32    k;
+  MRE_I32    status;
+  MRE_I32    nvc;
+  MRE_F64  * vworld;
+  MRE_F64  * vcliped;
+  MRE_F64  * vres;
+
+  vworld = malloc( vc * _MRE_vs * sizeof( MRE_F64 ) );
+
+  for ( j = 0; j < vc; ++j )
+  {
+    for ( k = MRE_COF; k < _MRE_vs; ++k )
+    {
+      vworld[ j * _MRE_vs + k ] = v[ j * _MRE_vs + k  ];
+    }
+    _MRE_vertex_shader(
+      v + j * _MRE_vs + MRE_POF,
+      vworld + j * _MRE_vs + MRE_POF,
+      v + j * _MRE_vs
+    );
+  }
+      
+  nvc = vc;
+
+  status = MRE_ClipModel( vworld, &nvc, bsphere, &vcliped );
+
+  if ( status == MRE_MODEL_INPL || status == MRE_MODEL_CLIPED )
+  {
+
+    vres = malloc( nvc * _MRE_vs * sizeof( MRE_F64 ) );
+    MRE_ClipBackFaces( vcliped, &nvc, vres );
+
+    if ( type == MRE_TRIANGLES )
+    {
+      MRE_RenderTrianglesModel( vres, nvc );
+    }
+    
+    free( vcliped );
+    free( vres );
+  }
+
+  free( vworld );
 }
 
 void
@@ -69,11 +157,12 @@ MRE_SetPrespsectiveView
 void
 MRE_InitZBuffer
 (
-
+    MRE_I32  w,
+    MRE_I32  h
 )
 {
   MRE_DestroyZBuffer();
-  _MRE_z_buff = malloc( MRE_buff_w * MRE_buff_h * sizeof( MRE_F64 ) );
+  _MRE_z_buff = malloc( w * h * sizeof( MRE_F64 ) );
   MRE_ClearZBuffer();
 }
 
@@ -83,7 +172,7 @@ MRE_ClearZBuffer
 
 )
 {
-  for ( MRE_I32 i = 0; i < MRE_buff_w * MRE_buff_h; ++i )
+  for ( MRE_I32 i = 0; i < _MRE_buff_w * _MRE_buff_h; ++i )
   {
     _MRE_z_buff[ i ] = 0;
   }

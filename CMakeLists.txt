@@ -18,7 +18,6 @@ add_library(moonrise_engine
   ${SRCROOT}/MRE_geometry.c
   ${SRCROOT}/MRE_alg.c
   ${SRCROOT}/MRE_graphics.c
-  ${SRCROOT}/MRE_light.c
   ${SRCROOT}/MRE.c
 )
 

@@ -45,6 +45,16 @@ typedef MRE_Vec4  MRE_Mat4[ 4 ];
 typedef MRE_UI32 MRE_Pixel;
 
 
+#define __MRE_DEF_VERT_SHADER( name )\
+  void ( name )( const MRE_Vec3 in, MRE_Vec3 out, const MRE_F64 * const v )
+
+#define __MRE_DEF_FRAG_SHADER( name )\
+  void ( name )( const MRE_Vec3 in, MRE_Vec3 out, const MRE_Vec3 fragp, const MRE_Vec3 cord )
+
+typedef __MRE_DEF_FRAG_SHADER( MRE_FragShader );
+typedef __MRE_DEF_VERT_SHADER( MRE_VertShader );
+
+
 #define MRE_INLINE_  inline __attribute__((always_inline)) 
 
 
