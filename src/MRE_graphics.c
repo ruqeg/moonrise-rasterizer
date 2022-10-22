@@ -429,9 +429,19 @@ MRE_DrawTexturedTriangle
   MRE_I16     ymn;
   MRE_I16     xl;
   MRE_I16     xr;
-  MRE_I32     u;
-  MRE_I32     v;
+  MRE_I32     vi;
+  MRE_I32     ui;
+  MRE_F64     vf;
+  MRE_F64     uf;
+  MRE_F64     v;
+  MRE_F64     u;
   MRE_F64     iz;
+  MRE_Vec3    tl;
+  MRE_Vec3    tr;
+  MRE_Vec3    bl;
+  MRE_Vec3    br;
+  MRE_Vec3    ct;
+  MRE_Vec3    cb;
   MRE_Vec3    vcolor;
   MRE_Vec3    vpos;
   MRE_Vec3    vcord;
@@ -632,10 +642,43 @@ MRE_DrawTexturedTriangle
       {
         u = ( _MRE_texture -> w - 1 ) * vxs[ MRE_TOF + 0 ][ x - xl ] / iz;
         v = ( _MRE_texture -> h - 1 ) * vxs[ MRE_TOF + 1 ][ x - xl ] / iz;
+        ui = ( MRE_I32 )( u );
+        vi = ( MRE_I32 )( v );
+        uf = u - ui;
+        vf = v - vi;
+        // bfilt
+        //   3
+        // 1   2
+        //   4
         MRE_PIXEL_TO_COLOR(
-          _MRE_texture -> pixels[ v * _MRE_texture -> w + u ],
-          vcolor
+          _MRE_texture -> pixels[ 
+            vi * _MRE_texture -> w + ui
+          ],
+          tl
         );
+        MRE_PIXEL_TO_COLOR(
+          _MRE_texture -> pixels[ 
+            vi * _MRE_texture -> w + (MRE_I32)ceil( u )
+          ],
+          tr
+        );
+        MRE_PIXEL_TO_COLOR(
+          _MRE_texture -> pixels[
+            (MRE_I32)ceil( v ) * _MRE_texture -> w + ui
+          ],
+          bl
+        );
+        MRE_PIXEL_TO_COLOR(
+          _MRE_texture -> pixels[ 
+            (MRE_I32)ceil( v ) * _MRE_texture -> w + (MRE_I32)ceil( u )
+          ],
+          br
+        );
+
+        MRE_VEC3_COEFF_2( tl, 1 - uf, tr, uf, ct );
+        MRE_VEC3_COEFF_2( bl, 1 - uf, br, uf, cb );
+        MRE_VEC3_COEFF_2( ct, 1 - vf, cb, vf, vcolor );
+        
         MRE_DIV_VEC3_S( vcolor, 255.0, vcolor );
 
         MRE_SET_VEC3(
