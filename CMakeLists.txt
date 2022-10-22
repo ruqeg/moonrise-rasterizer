@@ -11,7 +11,7 @@ include_directories(include)
 
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src)
 
-add_library(moonrise_engine
+add_library(moonrise-rasterizer
   ${SRCROOT}/MRE_math.c
   ${SRCROOT}/MRE_system.c
   ${SRCROOT}/MRE_bounding_sphere.c
@@ -22,7 +22,7 @@ add_library(moonrise_engine
 )
 
 install(
-  TARGETS moonrise_engine
+  TARGETS moonrise-rasterizer
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin

@@ -1,29 +1,18 @@
 #ifndef MRE_COLOR_H
 #define MRE_COLOR_H
 
-struct MRE_Color
-{
-  MRE_UI8  r;
-  MRE_UI8  g;
-  MRE_UI8  b;
-  MRE_UI8  a;
-};
-
-
 #define MRE_PIXEL_TO_COLOR( pixel, color )\
-({                                          \
-  color . r = ( pixel >> 24 ) & 0x000000FFu;\
-  color . g = ( pixel >> 16 ) & 0x000000FFu;\
-  color . b = ( pixel >> 8  ) & 0x000000FFu;\
-  color . a =  pixel          & 0x000000FFu;\
+({                                             \
+  (color)[0] = ( (pixel) >> 24 ) & 0x000000FFu;\
+  (color)[1] = ( (pixel) >> 16 ) & 0x000000FFu;\
+  (color)[2] = ( (pixel) >> 8  ) & 0x000000FFu;\
 })
 
 #define MRE_COLOR_TO_PIXEL( color )\
 (                                  \
-    color . r << 24                \
-  | color . g << 16                \
-  | color . b << 8                 \
-  | color . a                      \
+    (color)[0] << 24               \
+  | (color)[1] << 16               \
+  | (color)[2] << 8                \
 )
 
 #define MRE_RGBA_TO_PIXEL( r, g, b, a )\

@@ -99,6 +99,16 @@ MRE_ClipModel
     a,                              \
     _dv + MRE_COF                   \
   );                                \
+                                    \
+  if ( _MRE_texture == NULL )       \
+  {                                 \
+    MRE_VEC3_COEFF(                 \
+      _v1 + MRE_TOF,                \
+      _v2 + MRE_TOF,                \
+      a,                            \
+      _dv + MRE_TOF                 \
+    );                              \
+  }                                 \
 })
 #define __COPY_VERTEX( v, dv )\
 ({                                                      \

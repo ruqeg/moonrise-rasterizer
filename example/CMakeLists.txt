@@ -4,6 +4,6 @@ add_executable(example_exe
   main.c
 )
 
-target_link_libraries(example_exe moonrise_engine
+target_link_libraries(example_exe moonrise-rasterizer
   -lSDL2 -lSDL2main -lSDL2_image -lm -ldl
 )

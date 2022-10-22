@@ -3,13 +3,45 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 
-#include <time.h>
-
 #define WINDOW_WIDTH   800
 #define WINDOW_HEIGHT  600
 
+MRE_I32
+LoadTextureFromFile_SDL2
+(
+    const char          * p,
+    struct MRE_Texture  * t
+)
+{
 
-__MRE_DEF_VERT_SHADER( CustomVertexShader )
+  SDL_PixelFormat  * format;
+  SDL_Surface      * sdl_surface;
+
+  format      = SDL_AllocFormat( SDL_PIXELFORMAT_RGBA8888 );
+  sdl_surface = SDL_ConvertSurface( IMG_Load( p ), format, 0 );
+
+  if ( sdl_surface == NULL )  return -1;
+
+  t -> w = sdl_surface -> w;
+  t -> h = sdl_surface -> h;
+
+  t -> pixels = malloc( t -> w * t -> h * sizeof( MRE_UI32 ) );
+
+  memcpy(
+    t -> pixels,
+    sdl_surface -> pixels,
+    sdl_surface -> h * sdl_surface -> pitch
+  );
+
+  SDL_FreeSurface( sdl_surface );
+
+  return 1;
+}
+
+__MRE_DEF_VERT_SHADER
+(
+    CustomVertexShader
+)
 {
   MRE_Mat4  transform_mat;
   MRE_Mat4  rotate_mat;
@@ -17,11 +49,11 @@ __MRE_DEF_VERT_SHADER( CustomVertexShader )
   MRE_Vec3  vpos;
   MRE_Vec3  vrot;
   
-  MRE_SET_VEC3( 0.0, 0.0, 12.0, vpos );
+  MRE_SET_VEC3( 0.0, 0.0, 9.0, vpos );
   MRE_SET_VEC3(
-    M_PI_2 / 2.0 * SDL_GetTicks() * 0.001,
-    M_PI_2 / 2.0 * SDL_GetTicks() * 0.001, 
-    M_PI_2 / 2.0 * SDL_GetTicks() * 0.001,
+    MRE_PI_2 * 0.5 * SDL_GetTicks() * 0.001,
+    MRE_PI_2 * 0.5 * SDL_GetTicks() * 0.001, 
+    MRE_PI_2 * 0.5 * SDL_GetTicks() * 0.001,
     vrot
   );
 
@@ -41,8 +73,10 @@ __MRE_DEF_VERT_SHADER( CustomVertexShader )
   );
 }
 
-
-__MRE_DEF_FRAG_SHADER( CustomFragmentShader )
+__MRE_DEF_FRAG_SHADER
+(
+    CustomFragmentShader
+)
 {
   MRE_COPY_VEC3( in, out );
 }
@@ -53,20 +87,23 @@ main
     int, char **
 )
 {
-  int             quit;
+  int                 quit;
 
-  int             pixels_pitch;
-  void          * pixels;
+  int                 pixels_pitch;
+  void              * pixels;
 
-  SDL_Event       event;
+  SDL_Event           event;
   
-  SDL_Window    * window;
-  SDL_Renderer  * sdl_renderer;
-  SDL_Texture   * sdl_texture;
+  SDL_Window        * window;
+  SDL_Renderer      * sdl_renderer;
+  SDL_Texture       * sdl_texture;
 
-  MRE_I32         vertex_count;
-  MRE_Vec4        bounding_sphere;
-  
+  MRE_I32             vertex_count;
+  MRE_Vec4            bounding_sphere;
+
+  struct MRE_Texture  texture;  
+
+
 
 
   SDL_Init(SDL_INIT_VIDEO);
@@ -106,48 +143,53 @@ main
   
   MRE_F64  vertex[  ] =
   {
-     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
-     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
+     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,  0.0,
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0,
+     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0,
+     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  1.0,  1.0,
+
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
+     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,  0.0,
      1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0,
-
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
      1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0,
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0,
-     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
+     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  1.0,  1.0,
 
-    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
+    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  0.0,  1.0,
      1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
-    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
-     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
+     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  1.0,  0.0,
+    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  0.0,  1.0,
+     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  1.0,  0.0,
     -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  0.0,
+                                                    
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
+    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  0.0,  0.0,
+    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
+    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  1.0,  1.0,
 
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
-    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  0.0,
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  0.0,
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
-
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
+    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  0.0,  0.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,  1.0,
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,  1.0,
      1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
-
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
+                                                    
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  1.0,  0.0,
     -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  0.0,
      1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  1.0,  0.0,
      1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
-     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0
+     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  1.0,  1.0
   };
+
+  if ( LoadTextureFromFile_SDL2( "../example/res/texture.jpg", &texture ) == -1 )
+  {
+    printf("Can't load texture.png\n");
+  }
 
   quit = 0;
 
@@ -168,18 +210,27 @@ main
     {   
       memset( pixels, 0, sizeof(MRE_UI32) * WINDOW_WIDTH * WINDOW_HEIGHT);
 
-      MRE_SET_VEC4( 0.0, 0.0, 11.0, sqrt( 3 ), bounding_sphere );
+      MRE_SET_VEC4( 0.0, 0.0, 8.0, sqrt( 3 ), bounding_sphere );
 
       MRE_SetBuffer( pixels, WINDOW_WIDTH, WINDOW_HEIGHT );
       MRE_SetVertexAttribSize( 8 );
       MRE_BindVertexShader( CustomVertexShader );
       MRE_BindFragmentShader( CustomFragmentShader );
+      MRE_BindTexture( &texture );
       MRE_DrawArrays(
         MRE_TRIANGLES,
         vertex, vertex_count,
         bounding_sphere
       );
       MRE_ClearZBuffer();
+    }
+
+    for ( int y = 0; y < texture . h; ++y )
+    {
+      for ( int x = 0; x < texture . w; ++x )
+      {
+        *((MRE_UI32*)pixels + y * WINDOW_WIDTH + x ) = texture . pixels [ y * texture . w + x ];
+      }
     }
 
     SDL_UnlockTexture( sdl_texture );
@@ -189,6 +240,8 @@ main
 
     SDL_RenderPresent( sdl_renderer );
   }
+
+  free( texture . pixels );
 
   MRE_DestroyZBuffer();
 

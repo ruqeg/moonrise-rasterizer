@@ -88,6 +88,18 @@ MRE_DrawColoredTriangle
     const MRE_F64   * v2
 );
 
+extern 
+void 
+MRE_DrawTexturedTriangle
+(
+    const MRE_F64   * p0,
+    const MRE_F64   * v0,
+    const MRE_F64   * p1,
+    const MRE_F64   * v1,
+    const MRE_F64   * p2,
+    const MRE_F64   * v2
+);
+
 extern
 void
 MRE_RenderTrianglesModel
