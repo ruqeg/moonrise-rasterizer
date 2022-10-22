@@ -1,19 +1,19 @@
 #ifndef MRE_GRAPHICS_H
 #define MRE_GRAPHICS_H
 
-#include <MRE_decl.h>
 #include <MRE_math.h>
-#include <MRE_system.h>
 #include <MRE_color.h>
 #include <MRE_alg.h>
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
-#define MRE_MODEL_INPL    1
-#define MRE_MODEL_OUPL   -1
-#define MRE_MODEL_CLIPED  0
+#define MRE_MODEL_INPL        1
+#define MRE_MODEL_OUPL       -1
+#define MRE_MODEL_CLIPED      0
+
+#define MRE_TRIANGLES         0
+
 
 extern
 void

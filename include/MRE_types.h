@@ -34,15 +34,17 @@ typedef MRE_Vec3  MRE_Mat3[ 3 ];
 typedef MRE_Vec4  MRE_Mat4[ 4 ];
 
 
-#define MRE_F64_MAX DBL_MAX
-#define MRE_F64_MIN 0.00000000001
+#define MRE_F64_MAX   DBL_MAX
+#define MRE_F64_MIN   0.00000000001
 
 
-#define MRE_PI    3.14159265358979323846264338327950288
-#define MRE_PI_2  1.57079632679489661923132169163975144
+#define MRE_PI        3.14159265358979323846264338327950288
+#define MRE_PI_2      1.57079632679489661923132169163975144
+
 
 
 typedef MRE_UI32 MRE_Pixel;
+
 
 
 #define __MRE_DEF_VERT_SHADER( name )\
@@ -55,7 +57,7 @@ typedef __MRE_DEF_FRAG_SHADER( MRE_FragShader );
 typedef __MRE_DEF_VERT_SHADER( MRE_VertShader );
 
 
-#define MRE_INLINE_  inline __attribute__((always_inline)) 
 
+#define MRE_INLINE_  inline __attribute__((always_inline)) 
 
 #endif /* MRE_TYPES_H */

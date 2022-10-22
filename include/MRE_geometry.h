@@ -2,7 +2,6 @@
 #define MRE_GEOMETRY_H
 
 #include <MRE_math.h>
-#include <MRE_decl.h>
 #include <MRE_color.h>
 #include <MRE_alg.h>
 

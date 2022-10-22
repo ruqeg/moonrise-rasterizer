@@ -8,8 +8,6 @@
 #define MRE_COF               3
 #define MRE_TOF               6
 
-#define MRE_TRIANGLES         0
-
 extern  MRE_VertShader  * _MRE_vertex_shader;
 extern  MRE_FragShader  * _MRE_fragment_shader;
 

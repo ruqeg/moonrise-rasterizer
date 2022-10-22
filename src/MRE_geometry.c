@@ -1,5 +1,7 @@
 #include <MRE_geometry.h>
 
+#include <MRE_decl.h>
+
 MRE_I32
 MRE_ClipModel
 (

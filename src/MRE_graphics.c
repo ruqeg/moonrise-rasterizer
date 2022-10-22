@@ -1,5 +1,7 @@
 #include <MRE_graphics.h>
 
+#include <MRE_decl.h>
+
 void
 MRE_DrawLine
 (
