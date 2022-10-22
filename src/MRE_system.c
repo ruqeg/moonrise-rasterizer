@@ -87,10 +87,9 @@ MRE_DrawArrays
 
   if ( status == MRE_MODEL_INPL || status == MRE_MODEL_CLIPED )
   {
-
     vres = malloc( nvc * _MRE_vs * sizeof( MRE_F64 ) );
     MRE_ClipBackFaces( vcliped, &nvc, vres );
-
+    
     if ( type == MRE_TRIANGLES )
     {
       MRE_RenderTrianglesModel( vres, nvc );

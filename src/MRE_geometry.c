@@ -48,7 +48,7 @@ MRE_ClipModel
      
     status = MRE_MODEL_CLIPED;
 
-    buff2_v = malloc( 9 * nvc * _MRE_vs * sizeof( MRE_F64 ) );
+    buff2_v = malloc( 3 * nvc * _MRE_vs * sizeof( MRE_F64 ) );
 
     MRE_ClipTrianglesAgainstPlane(
       _MRE_view_planes[ i ],
@@ -100,7 +100,7 @@ MRE_ClipModel
     _dv + MRE_COF                   \
   );                                \
                                     \
-  if ( _MRE_texture == NULL )       \
+  if ( _MRE_texture != NULL )       \
   {                                 \
     MRE_VEC3_COEFF(                 \
       _v1 + MRE_TOF,                \
@@ -202,7 +202,7 @@ MRE_ClipTrianglesAgainstPlane
   }
   *vc = nvc;
 }
-#include <stdio.h>
+
 void
 MRE_ClipBackFaces
 (

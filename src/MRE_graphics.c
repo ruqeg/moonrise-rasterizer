@@ -224,9 +224,9 @@ MRE_DrawColoredTriangle
     MRE_SWAP( const MRE_F64 *, v1, v2 );
   }
 
-  ymn = floor( ( p0[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 ) );
-  ymd = floor( ( p1[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 ) );
-  ymx = ceil(  ( p2[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 ) );
+  ymn = ( p0[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 );
+  ymd = ( p1[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 );
+  ymx = ( p2[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 );
 
   xs012 = alloca( ( ymx - ymn + 1 ) * sizeof( MRE_F64 ) );
   zs012 = alloca( ( ymx - ymn + 1 ) * sizeof( MRE_F64 ) );
@@ -356,8 +356,8 @@ MRE_DrawColoredTriangle
 
   for ( y = ymn; y < ymx; ++y )
   {
-    xl = floor( ( xsl[ y - ymn ] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 ) );
-    xr = ceil(  ( xsr[ y - ymn ] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 ) );
+    xl = ( xsl[ y - ymn ] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
+    xr = ( xsr[ y - ymn ] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
 
     zxs = alloca ( ( xr - xl + 1 ) * sizeof(  MRE_F64 ) );
     MRE_Interpolate_I16_F64(
@@ -367,7 +367,7 @@ MRE_DrawColoredTriangle
     );
     
     _MRE_CFOR( 6, {
-      vxs[ _k ] = alloca ( ( xr - xl + 1 ) * sizeof(  MRE_F64 ) );
+      vxs[ _k ] = malloc ( ( xr - xl + 1 ) * sizeof(  MRE_F64 ) );
       MRE_Interpolate_I16_F64(
         vxs[ _k ], 
         xl, vsl[ _k ][ y - ymn ], 
@@ -405,6 +405,7 @@ MRE_DrawColoredTriangle
         _MRE_z_buff[ _MRE_buff_w * y + x ] = iz;
       }
     }
+    _MRE_CFOR( 6, {  free( vxs[ _k ] );  } );
   }
 }
 
@@ -472,9 +473,9 @@ MRE_DrawTexturedTriangle
     MRE_SWAP( const MRE_F64 *, v1, v2 );
   }
 
-  ymn = floor( ( p0[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 ) );
-  ymd = floor( ( p1[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 ) );
-  ymx = ceil(  ( p2[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 ) );
+  ymn = ( p0[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 );
+  ymd = ( p1[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 );
+  ymx = ( p2[1] * 0.5 + 0.5 ) * ( _MRE_buff_h - 1 );
 
   xs012 = alloca( ( ymx - ymn + 1 ) * sizeof( MRE_F64 ) );
   zs012 = alloca( ( ymx - ymn + 1 ) * sizeof( MRE_F64 ) );
@@ -605,8 +606,8 @@ MRE_DrawTexturedTriangle
 
   for ( y = ymn; y < ymx; ++y )
   {
-    xl = floor( ( xsl[ y - ymn ] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 ) );
-    xr = ceil(  ( xsr[ y - ymn ] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 ) );
+    xl = ( xsl[ y - ymn ] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
+    xr = ( xsr[ y - ymn ] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
 
     zxs = alloca ( ( xr - xl + 1 ) * sizeof(  MRE_F64 ) );
     MRE_Interpolate_I16_F64(
@@ -616,7 +617,7 @@ MRE_DrawTexturedTriangle
     );
     
     _MRE_CFOR( 8, {
-      vxs[ _k ] = alloca ( ( xr - xl + 1 ) * sizeof(  MRE_F64 ) );
+      vxs[ _k ] = malloc( ( xr - xl + 1 ) * sizeof(  MRE_F64 ) );
       MRE_Interpolate_I16_F64(
         vxs[ _k ], 
         xl, vsl[ _k ][ y - ymn ], 
@@ -663,6 +664,7 @@ MRE_DrawTexturedTriangle
         _MRE_z_buff[ _MRE_buff_w * y + x ] = iz;
       }
     }
+    _MRE_CFOR( 8, {  free( vxs[ _k ] );  } );
   }
 }
 

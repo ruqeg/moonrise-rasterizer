@@ -49,7 +49,7 @@ __MRE_DEF_VERT_SHADER
   MRE_Vec3  vpos;
   MRE_Vec3  vrot;
   
-  MRE_SET_VEC3( 0.0, 0.0, 9.0, vpos );
+  MRE_SET_VEC3( 0.0, 0.0, 9 - SDL_GetTicks() * 0.001, vpos );
   MRE_SET_VEC3(
     MRE_PI_2 * 0.5 * SDL_GetTicks() * 0.001,
     MRE_PI_2 * 0.5 * SDL_GetTicks() * 0.001, 
@@ -210,7 +210,7 @@ main
     {   
       memset( pixels, 0, sizeof(MRE_UI32) * WINDOW_WIDTH * WINDOW_HEIGHT);
 
-      MRE_SET_VEC4( 0.0, 0.0, 8.0, sqrt( 3 ), bounding_sphere );
+      MRE_SET_VEC4( 0.0, 0.0, 9 - SDL_GetTicks() * 0.001, sqrt( 3 ), bounding_sphere );
 
       MRE_SetBuffer( pixels, WINDOW_WIDTH, WINDOW_HEIGHT );
       MRE_SetVertexAttribSize( 8 );
