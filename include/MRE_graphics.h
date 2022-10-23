@@ -8,12 +8,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MRE_MODEL_INPL        1
-#define MRE_MODEL_OUPL       -1
-#define MRE_MODEL_CLIPED      0
+#define MRE_MODEL_INPL          1
+#define MRE_MODEL_OUPL         -1
+#define MRE_MODEL_CLIPED        0
 
-#define MRE_TRIANGLES         0
+#define MRE_TRIANGLES           0
 
+#define MRE_TEXTURE             0
+#define MRE_COLOR               1
+
+#define MRE_TEXTURE_MIN_FILTER  0
+#define MRE_TEXTURE_MAG_FILTER  1
+
+#define MRE_NEAREST             0
+#define MRE_LINEAR              1
 
 extern
 void

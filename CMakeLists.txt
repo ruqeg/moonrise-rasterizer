@@ -8,14 +8,16 @@ option(MRE_BUILD_EXAMPLE OFF)
 find_package(SDL2 REQUIRED)
 
 include_directories(include)
+include_directories(extlibs)
 
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src)
 
 add_library(moonrise-rasterizer
   ${SRCROOT}/MRE_math.c
+  ${SRCROOT}/MRE_alg.c
+  ${SRCROOT}/MRE_texture.c
   ${SRCROOT}/MRE_bounding_sphere.c
   ${SRCROOT}/MRE_geometry.c
-  ${SRCROOT}/MRE_alg.c
   ${SRCROOT}/MRE_graphics.c
   ${SRCROOT}/MRE.c
 )

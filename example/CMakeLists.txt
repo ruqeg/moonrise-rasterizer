@@ -5,5 +5,5 @@ add_executable(example_exe
 )
 
 target_link_libraries(example_exe moonrise-rasterizer
-  -lSDL2 -lSDL2main -lSDL2_image -lm -ldl
+  -lSDL2 -lSDL2main -lm -ldl
 )

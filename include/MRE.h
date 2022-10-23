@@ -10,6 +10,62 @@
 #include <MRE_alg.h>
 #include <MRE_bounding_sphere.h>
 
+#define MRE_RGB  0
+
+extern
+void
+MRE_InitZBuffer
+(
+    MRE_I32  w,
+    MRE_I32  h
+);
+
+extern
+void
+MRE_DestroyZBuffer
+(
+
+);
+
+extern
+void
+MRE_InitTextures
+(
+    MRE_I32 count
+);
+
+extern
+void
+MRE_BindTexture
+(
+    MRE_I32 ind
+);
+
+extern
+void
+MRE_TextureImage
+(
+    MRE_I32    format,
+    MRE_UI8  * data,
+    MRE_I32    w,
+    MRE_I32    h
+);
+
+extern
+void
+MRE_TextureParameter
+(
+    MRE_I32  name,
+    MRE_I32  param
+);
+
+extern
+void
+MRE_DestroyTextures
+(
+
+);
+
 extern
 void
 MRE_SetBuffer
@@ -38,9 +94,12 @@ MRE_SetVertexAttribSize
 
 extern
 void
-MRE_BindTexture
+MRE_TextureImage
 (
-    const struct MRE_Texture  * const t
+    MRE_I32    type,
+    MRE_UI8  * data,
+    MRE_I32    w,
+    MRE_I32    h
 );
 
 extern
@@ -61,7 +120,7 @@ extern
 void
 MRE_DrawArrays
 (
-    MRE_I32                 type,
+    MRE_I32                 ptype,
     const MRE_F64   * const v,
     MRE_I32                 vc,
     const MRE_Vec4          bsphere
@@ -69,22 +128,7 @@ MRE_DrawArrays
 
 extern
 void
-MRE_InitZBuffer
-(
-    MRE_I32  w,
-    MRE_I32  h
-);
-
-extern
-void
 MRE_ClearZBuffer
-(
-
-);
-
-extern
-void
-MRE_DestroyZBuffer
 (
 
 );

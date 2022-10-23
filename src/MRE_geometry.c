@@ -88,29 +88,29 @@ MRE_ClipModel
 })
 
 #define __ADD_INTERSECTION_VERTEX( _v1, _v2, _dv )\
-({                                  \
-  MRE_F64 a = MRE_IntersectionPlane(\
-    _v1 + MRE_POF,                  \
-    _v2 + MRE_POF,                  \
-    plane,                          \
-    _dv + MRE_POF                   \
-  );                                \
-  MRE_VEC3_COEFF(                   \
-    _v1 + MRE_COF,                  \
-    _v2 + MRE_COF,                  \
-    a,                              \
-    _dv + MRE_COF                   \
-  );                                \
-                                    \
-  if ( _MRE_texture != NULL )       \
-  {                                 \
-    MRE_VEC3_COEFF(                 \
-      _v1 + MRE_TOF,                \
-      _v2 + MRE_TOF,                \
-      a,                            \
-      _dv + MRE_TOF                 \
-    );                              \
-  }                                 \
+({                                   \
+  MRE_F64 a = MRE_IntersectionPlane( \
+    _v1 + MRE_POF,                   \
+    _v2 + MRE_POF,                   \
+    plane,                           \
+    _dv + MRE_POF                    \
+  );                                 \
+  MRE_VEC3_COEFF(                    \
+    _v1 + MRE_COF,                   \
+    _v2 + MRE_COF,                   \
+    a,                               \
+    _dv + MRE_COF                    \
+  );                                 \
+                                     \
+  if ( _MRE_btexture != NULL )       \
+  {                                  \
+    MRE_VEC3_COEFF(                  \
+      _v1 + MRE_TOF,                 \
+      _v2 + MRE_TOF,                 \
+      a,                             \
+      _dv + MRE_TOF                  \
+    );                               \
+  }                                  \
 })
 #define __COPY_VERTEX( v, dv )\
 ({                                                      \

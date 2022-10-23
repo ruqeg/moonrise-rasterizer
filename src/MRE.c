@@ -2,22 +2,106 @@
 
 #include <MRE_decl.h>
 
-MRE_VertShader             * _MRE_vertex_shader       = NULL;
-MRE_FragShader             * _MRE_fragment_shader     = NULL;
+MRE_VertShader      * _MRE_vertex_shader        = NULL;
+MRE_FragShader      * _MRE_fragment_shader      = NULL;
 
-MRE_UI32                   * _MRE_buff                = NULL;
-MRE_I16                      _MRE_buff_w              = 0;
-MRE_I16                      _MRE_buff_h              = 0;
+MRE_UI32            * _MRE_buff                 = NULL;
+MRE_I16               _MRE_buff_w               = -1;
+MRE_I16               _MRE_buff_h               = -1;
 
-MRE_Mat4                     _MRE_projection_mat;
-MRE_Vec4                     _MRE_view_planes[ 6 ];
-MRE_F64                    * _MRE_z_buff              = NULL;
+MRE_Mat4              _MRE_projection_mat;
+MRE_Vec4              _MRE_view_planes[ 6 ];
+MRE_F64             * _MRE_z_buff               = NULL;
 
-MRE_I32                      _MRE_vs                  = -1;
+MRE_I32               _MRE_vs                   = -1;
 
-const struct MRE_Texture   * _MRE_texture             = NULL;
+struct MRE_Texture  * _MRE_textures             = NULL;
+MRE_I32               _MRE_textures_count       = -1;
+MRE_I32               _MRE_binded_texture_index = MRE_NONE_TEXTURE;
+struct MRE_Texture  * _MRE_btexture             = NULL;
+
+void  (*_MRE_gettexel_fun[2])(
+  MRE_F64, MRE_F64, MRE_F64 *
+);
 
 
+void
+MRE_InitZBuffer
+(
+    MRE_I32  w,
+    MRE_I32  h
+)
+{
+  MRE_DestroyZBuffer();
+  _MRE_z_buff = malloc( w * h * sizeof( MRE_F64 ) );
+  MRE_ClearZBuffer();
+}
+
+void
+MRE_InitTextures
+(
+    MRE_I32 count
+)
+{
+  //TODO reinit textures arr
+  if ( _MRE_textures != NULL )  free( _MRE_textures );
+  _MRE_textures = malloc( count * sizeof( struct MRE_Texture ) );
+  
+  for ( MRE_I32 j = 0; j < count; ++j )
+  {
+    _MRE_textures[ j ] . data = NULL;
+  }
+
+  _MRE_textures_count = count;
+}
+
+void
+MRE_BindTexture
+(
+    MRE_I32 ind
+)
+{
+  _MRE_binded_texture_index = ind;
+  if ( ind == MRE_NONE_TEXTURE )
+  {
+    _MRE_btexture = NULL;
+  }
+  else
+  {
+    _MRE_btexture = _MRE_textures + _MRE_binded_texture_index;
+  }
+}
+
+void
+MRE_TextureImage
+(
+    MRE_I32    format,
+    MRE_UI8  * data,
+    MRE_I32    w,
+    MRE_I32    h
+)
+{
+  if ( _MRE_btexture -> data != NULL ) free( _MRE_btexture -> data );
+  _MRE_btexture -> data = malloc( w * h * sizeof( MRE_Vec3 ) );
+
+  for ( MRE_I32 j = 0; j < w * h; ++j )
+  {
+    _MRE_btexture -> data[ j + format ][0] = data[ j * 3 + 0 ] / 255.0;
+    _MRE_btexture -> data[ j + format ][1] = data[ j * 3 + 1 ] / 255.0;
+    _MRE_btexture -> data[ j + format ][2] = data[ j * 3 + 2 ] / 255.0;
+  }
+  _MRE_btexture -> w = w;
+  _MRE_btexture -> h = h;
+}
+
+void
+MRE_DestroyTextures
+(
+
+)
+{
+  free( _MRE_textures );
+}
 
 void
 MRE_SetBuffer
@@ -93,15 +177,6 @@ MRE_SetVertexAttribSize
 }
 
 void
-MRE_BindTexture
-(
-    const struct MRE_Texture  * const t
-)
-{
-  _MRE_texture = t;
-}
-
-void
 MRE_BindVertexShader
 (
     MRE_VertShader  shader
@@ -122,7 +197,7 @@ MRE_BindFragmentShader
 void
 MRE_DrawArrays
 (
-    MRE_I32                 type,
+    MRE_I32                 ptype,
     const MRE_F64   * const v,
     MRE_I32                 vc,
     const MRE_Vec4          bsphere
@@ -135,6 +210,12 @@ MRE_DrawArrays
   MRE_F64  * vworld;
   MRE_F64  * vcliped;
   MRE_F64  * vres;
+
+  void  (* renderfun )(
+    const MRE_F64 * const, MRE_I32
+  );
+
+
 
   vworld = malloc( vc * _MRE_vs * sizeof( MRE_F64 ) );
 
@@ -155,33 +236,20 @@ MRE_DrawArrays
 
   status = MRE_ClipModel( vworld, &nvc, bsphere, &vcliped );
 
+  if ( ptype == MRE_TRIANGLES )  renderfun = MRE_RenderTrianglesModel;
+
   if ( status == MRE_MODEL_INPL || status == MRE_MODEL_CLIPED )
   {
     vres = malloc( nvc * _MRE_vs * sizeof( MRE_F64 ) );
     MRE_ClipBackFaces( vcliped, &nvc, vres );
     
-    if ( type == MRE_TRIANGLES )
-    {
-      MRE_RenderTrianglesModel( vres, nvc );
-    }
+    renderfun( vres, nvc );
     
     free( vcliped );
     free( vres );
   }
 
   free( vworld );
-}
-
-void
-MRE_InitZBuffer
-(
-    MRE_I32  w,
-    MRE_I32  h
-)
-{
-  MRE_DestroyZBuffer();
-  _MRE_z_buff = malloc( w * h * sizeof( MRE_F64 ) );
-  MRE_ClearZBuffer();
 }
 
 void
@@ -193,6 +261,25 @@ MRE_ClearZBuffer
   for ( MRE_I32 i = 0; i < _MRE_buff_w * _MRE_buff_h; ++i )
   {
     _MRE_z_buff[ i ] = 0;
+  }
+}
+
+void
+MRE_TextureParameter
+(
+    MRE_I32  name,
+    MRE_I32  param
+)
+{
+  
+  switch ( param )
+  {
+    case MRE_NEAREST:
+      _MRE_gettexel_fun[ name ] = MRE_GetNearestTexel;
+      break;
+    case MRE_LINEAR:
+      _MRE_gettexel_fun[ name ] = MRE_GetLinerTexel;
+      break;
   }
 }
 

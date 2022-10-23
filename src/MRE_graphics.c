@@ -411,7 +411,21 @@ MRE_DrawColoredTriangle
   }
 }
 
-extern 
+void
+_MRE_GetNearestTexel
+(
+  MRE_F64    tx,
+  MRE_F64    ty,
+  MRE_F64  * dc
+);
+void
+_MRE_GetLinerTexel
+(
+  MRE_F64    tx,
+  MRE_F64    ty,
+  MRE_F64  * dc
+);
+
 void 
 MRE_DrawTexturedTriangle
 (
@@ -429,21 +443,11 @@ MRE_DrawTexturedTriangle
   MRE_I16     ymx;
   MRE_I16     ymd;
   MRE_I16     ymn;
+  MRE_I16     xmx;
+  MRE_I16     xmn;
   MRE_I16     xl;
   MRE_I16     xr;
-  MRE_I32     vi;
-  MRE_I32     ui;
-  MRE_F64     vf;
-  MRE_F64     uf;
-  MRE_F64     v;
-  MRE_F64     u;
   MRE_F64     iz;
-  MRE_Vec3    tl;
-  MRE_Vec3    tr;
-  MRE_Vec3    bl;
-  MRE_Vec3    br;
-  MRE_Vec3    ct;
-  MRE_Vec3    cb;
   MRE_Vec3    vcolor;
   MRE_Vec3    vpos;
   MRE_Vec3    vcord;
@@ -462,8 +466,11 @@ MRE_DrawTexturedTriangle
   MRE_F64   * vxs[8];
   MRE_F64   * vsl[8];
   MRE_F64   * vsr[8];
-  
 
+  void  (*gettexel_func)(
+    MRE_F64, MRE_F64, MRE_F64 *
+  );
+  
 
 
 
@@ -615,6 +622,29 @@ MRE_DrawTexturedTriangle
       vsr[ _k ] = vs02[ _k ];
     } );
   }
+  
+
+
+  if ( p1[0] < p0[0] )  MRE_SWAP( const MRE_F64 *, p0, p1 );
+  if ( p2[0] < p0[0] )  MRE_SWAP( const MRE_F64 *, p0, p2 );
+  if ( p2[0] < p1[0] )  MRE_SWAP( const MRE_F64 *, p1, p2 );
+
+  xmn = ( p0[0] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
+  xmx = ( p2[0] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
+
+  if
+  (
+    xmx - xmn < _MRE_btexture -> w
+    &&
+    ymx - ymn < _MRE_btexture -> h
+  )
+  {
+    gettexel_func = _MRE_gettexel_fun[ MRE_TEXTURE_MIN_FILTER ];
+  }
+  else
+  {
+    gettexel_func = _MRE_gettexel_fun[ MRE_TEXTURE_MAG_FILTER ];
+  }
 
   for ( y = ymn; y < ymx; ++y )
   {
@@ -642,46 +672,11 @@ MRE_DrawTexturedTriangle
       iz = vxs[ MRE_POF + 2 ][ x - xl ];
       if ( iz > _MRE_z_buff[ _MRE_buff_w * y + x ] + MRE_F64_MIN )
       {
-        u = ( _MRE_texture -> w - 1 ) * vxs[ MRE_TOF + 0 ][ x - xl ] / iz;
-        v = ( _MRE_texture -> h - 1 ) * vxs[ MRE_TOF + 1 ][ x - xl ] / iz;
-        ui = ( MRE_I32 )( u );
-        vi = ( MRE_I32 )( v );
-        uf = u - ui;
-        vf = v - vi;
-        // bfilt
-        //   3
-        // 1   2
-        //   4
-        MRE_PIXEL_TO_COLOR(
-          _MRE_texture -> pixels[ 
-            vi * _MRE_texture -> w + ui
-          ],
-          tl
+        gettexel_func(
+          ( _MRE_btexture -> w - 1 ) * vxs[ MRE_TOF + 0 ][ x - xl ] / iz,
+          ( _MRE_btexture -> h - 1 ) * vxs[ MRE_TOF + 1 ][ x - xl ] / iz,
+          vcolor
         );
-        MRE_PIXEL_TO_COLOR(
-          _MRE_texture -> pixels[ 
-            vi * _MRE_texture -> w + (MRE_I32)ceil( u )
-          ],
-          tr
-        );
-        MRE_PIXEL_TO_COLOR(
-          _MRE_texture -> pixels[
-            (MRE_I32)ceil( v ) * _MRE_texture -> w + ui
-          ],
-          bl
-        );
-        MRE_PIXEL_TO_COLOR(
-          _MRE_texture -> pixels[ 
-            (MRE_I32)ceil( v ) * _MRE_texture -> w + (MRE_I32)ceil( u )
-          ],
-          br
-        );
-
-        MRE_VEC3_COEFF_2( tl, 1 - uf, tr, uf, ct );
-        MRE_VEC3_COEFF_2( bl, 1 - uf, br, uf, cb );
-        MRE_VEC3_COEFF_2( ct, 1 - vf, cb, vf, vcolor );
-        
-        MRE_DIV_VEC3_S( vcolor, 255.0, vcolor );
 
         MRE_SET_VEC3(
           vcolor[0] * vxs[ MRE_COF + 0 ][ x - xl ] / iz,
@@ -724,17 +719,17 @@ MRE_RenderTrianglesModel
   MRE_UI32          j;
   MRE_Vec3          n;
   MRE_Vec4        * vproj;
-  void            (*drawfun)
-  (
-      const MRE_F64 *, const MRE_F64 *,
-      const MRE_F64 *, const MRE_F64 *,
-      const MRE_F64 *, const MRE_F64 *
+
+  void  (*drawfun) (
+    const MRE_F64 *, const MRE_F64 *,
+    const MRE_F64 *, const MRE_F64 *,
+    const MRE_F64 *, const MRE_F64 * 
   );
 
   
 
-  if ( _MRE_texture == NULL )  drawfun = MRE_DrawColoredTriangle;
-  else                         drawfun = MRE_DrawTexturedTriangle;
+  if ( _MRE_btexture == NULL )  drawfun = MRE_DrawColoredTriangle;
+  else                          drawfun = MRE_DrawTexturedTriangle;
 
   vproj = malloc( vc * sizeof( MRE_Vec4 ) );
  

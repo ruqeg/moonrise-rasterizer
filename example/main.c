@@ -1,42 +1,14 @@
 #include <MRE.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+
 
 #define WINDOW_WIDTH   800
 #define WINDOW_HEIGHT  600
 
-MRE_I32
-LoadTextureFromFile_SDL2
-(
-    const char          * p,
-    struct MRE_Texture  * t
-)
-{
-
-  SDL_PixelFormat  * format;
-  SDL_Surface      * sdl_surface;
-
-  format      = SDL_AllocFormat( SDL_PIXELFORMAT_RGBA8888 );
-  sdl_surface = SDL_ConvertSurface( IMG_Load( p ), format, 0 );
-
-  if ( sdl_surface == NULL )  return -1;
-
-  t -> w = sdl_surface -> w;
-  t -> h = sdl_surface -> h;
-
-  t -> pixels = malloc( t -> w * t -> h * sizeof( MRE_UI32 ) );
-
-  memcpy(
-    t -> pixels,
-    sdl_surface -> pixels,
-    sdl_surface -> h * sdl_surface -> pitch
-  );
-
-  SDL_FreeSurface( sdl_surface );
-
-  return 1;
-}
 
 __MRE_DEF_VERT_SHADER
 (
@@ -49,11 +21,11 @@ __MRE_DEF_VERT_SHADER
   MRE_Vec3  vpos;
   MRE_Vec3  vrot;
   
-  MRE_SET_VEC3( 0.0, 0.0, 4, vpos );
+  MRE_SET_VEC3( 0.0, 0.0, 10 - SDL_GetTicks() * 0.001, vpos );
   MRE_SET_VEC3(
-    MRE_PI_2 * 0.5,// * SDL_GetTicks() * 0.001,
-    MRE_PI_2 * 0.5,// * SDL_GetTicks() * 0.001, 
-    MRE_PI_2 * 0.5,// * SDL_GetTicks() * 0.001,
+    0,//MRE_PI_2 * SDL_GetTicks() * 0.001,
+    0,//MRE_PI_2 * SDL_GetTicks() * 0.001, 
+    0,//MRE_PI_2 * SDL_GetTicks() * 0.001,
     vrot
   );
 
@@ -91,6 +63,8 @@ main
 
   int                 pixels_pitch;
   void              * pixels;
+    
+  MRE_UI8           * data;
 
   SDL_Event           event;
   
@@ -100,9 +74,6 @@ main
 
   MRE_I32             vertex_count;
   MRE_Vec4            bounding_sphere;
-
-  struct MRE_Texture  texture;  
-
 
 
 
@@ -186,9 +157,21 @@ main
      1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  1.0,  1.0
   };
 
-  if ( LoadTextureFromFile_SDL2( "../example/res/texture.jpg", &texture ) == -1 )
+
   {
-    printf("Can't load texture.png\n");
+    MRE_I32    w;
+    MRE_I32    h;
+    MRE_I32    nrc;
+
+    data = stbi_load( "../example/res/texture.jpg", &w, &h, &nrc, 0 );
+
+    MRE_InitTextures( 1 );
+    MRE_BindTexture( 0 );
+    MRE_TextureImage( MRE_RGB, data, w, h );
+    MRE_GenerateMipmap();
+
+    MRE_TextureParameter( MRE_TEXTURE_MIN_FILTER, MRE_NEAREST );
+    MRE_TextureParameter( MRE_TEXTURE_MAG_FILTER, MRE_LINEAR );
   }
 
   quit = 0;
@@ -210,27 +193,18 @@ main
     {   
       memset( pixels, 0, sizeof(MRE_UI32) * WINDOW_WIDTH * WINDOW_HEIGHT);
 
-      MRE_SET_VEC4( 0.0, 0.0, 4, sqrt( 3 ), bounding_sphere );
+      MRE_SET_VEC4( 0.0, 0.0, 10 - SDL_GetTicks() * 0.001, sqrt( 3 ), bounding_sphere );
 
       MRE_SetBuffer( pixels, WINDOW_WIDTH, WINDOW_HEIGHT );
       MRE_SetVertexAttribSize( 8 );
       MRE_BindVertexShader( CustomVertexShader );
       MRE_BindFragmentShader( CustomFragmentShader );
-      MRE_BindTexture( &texture );
       MRE_DrawArrays(
         MRE_TRIANGLES,
         vertex, vertex_count,
         bounding_sphere
       );
       MRE_ClearZBuffer();
-    }
-
-    for ( int y = 0; y < texture . h; ++y )
-    {
-      for ( int x = 0; x < texture . w; ++x )
-      {
-        *((MRE_UI32*)pixels + y * WINDOW_WIDTH + x ) = texture . pixels [ y * texture . w + x ];
-      }
     }
 
     SDL_UnlockTexture( sdl_texture );
@@ -241,9 +215,10 @@ main
     SDL_RenderPresent( sdl_renderer );
   }
 
-  free( texture . pixels );
-
+  stbi_image_free(data);
+  
   MRE_DestroyZBuffer();
+  MRE_DestroyTextures();
 
   SDL_DestroyTexture( sdl_texture );
   SDL_DestroyRenderer( sdl_renderer );
