@@ -21,11 +21,11 @@ __MRE_DEF_VERT_SHADER
   MRE_Vec3  vpos;
   MRE_Vec3  vrot;
   
-  MRE_SET_VEC3( 0.0, 0.0, 10 - SDL_GetTicks() * 0.001, vpos );
+  MRE_SET_VEC3( 0.0, 0.0, 10 + SDL_GetTicks() * 0.001, vpos );
   MRE_SET_VEC3(
-    0,//MRE_PI_2 * SDL_GetTicks() * 0.001,
-    0,//MRE_PI_2 * SDL_GetTicks() * 0.001, 
-    0,//MRE_PI_2 * SDL_GetTicks() * 0.001,
+    0, //MRE_PI_2 * SDL_GetTicks() * 0.001,
+    0, //MRE_PI_2 * SDL_GetTicks() * 0.001, 
+    0, //MRE_PI_2 * SDL_GetTicks() * 0.001,
     vrot
   );
 
@@ -63,8 +63,6 @@ main
 
   int                 pixels_pitch;
   void              * pixels;
-    
-  MRE_UI8           * data;
 
   SDL_Event           event;
   
@@ -161,7 +159,8 @@ main
   {
     MRE_I32    w;
     MRE_I32    h;
-    MRE_I32    nrc;
+    MRE_I32    nrc; 
+    MRE_UI8  * data;
 
     data = stbi_load( "../example/res/texture.jpg", &w, &h, &nrc, 0 );
 
@@ -170,8 +169,14 @@ main
     MRE_TextureImage( MRE_RGB, data, w, h );
     MRE_GenerateMipmap();
 
-    MRE_TextureParameter( MRE_TEXTURE_MIN_FILTER, MRE_NEAREST );
+    //MRE_TextureParameter( MRE_TEXTURE_MIN_FILTER, MRE_NEAREST );
+    //MRE_TextureParameter( MRE_TEXTURE_MIN_FILTER, MRE_NEAREST_MIPMAP_NEAREST );
+    //MRE_TextureParameter( MRE_TEXTURE_MIN_FILTER, MRE_LINEAR_MIPMAP_NEAREST );
+    //MRE_TextureParameter( MRE_TEXTURE_MIN_FILTER, MRE_NEAREST_MIPMAP_LINEAR );
+    MRE_TextureParameter( MRE_TEXTURE_MIN_FILTER, MRE_LINEAR_MIPMAP_LINEAR );
     MRE_TextureParameter( MRE_TEXTURE_MAG_FILTER, MRE_LINEAR );
+  
+    stbi_image_free(data);
   }
 
   quit = 0;
@@ -193,7 +198,7 @@ main
     {   
       memset( pixels, 0, sizeof(MRE_UI32) * WINDOW_WIDTH * WINDOW_HEIGHT);
 
-      MRE_SET_VEC4( 0.0, 0.0, 10 - SDL_GetTicks() * 0.001, sqrt( 3 ), bounding_sphere );
+      MRE_SET_VEC4( 0.0, 0.0, 10 + SDL_GetTicks() * 0.001, sqrt( 3 ), bounding_sphere );
 
       MRE_SetBuffer( pixels, WINDOW_WIDTH, WINDOW_HEIGHT );
       MRE_SetVertexAttribSize( 8 );
@@ -215,8 +220,6 @@ main
     SDL_RenderPresent( sdl_renderer );
   }
 
-  stbi_image_free(data);
-  
   MRE_DestroyZBuffer();
   MRE_DestroyTextures();
 

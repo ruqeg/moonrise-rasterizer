@@ -28,8 +28,13 @@ extern  MRE_I32               _MRE_textures_count;
 extern  MRE_I32               _MRE_binded_texture_index;
 extern  struct MRE_Texture  * _MRE_btexture;
 
+extern  MRE_I32               _MRE_triangle_size;
+
 extern  void  (*_MRE_gettexel_fun[2])(
-  MRE_F64, MRE_F64, MRE_F64 *
+  const MRE_Vec3 *, MRE_I32, MRE_F64, MRE_F64, MRE_F64 *
+);
+extern  void  (*_MRE_gettexture_fun[2])(
+  MRE_Vec3 * * const, MRE_I32 * const
 );
 
 #endif /* MRE_DECL_H */

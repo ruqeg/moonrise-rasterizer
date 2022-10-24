@@ -20,8 +20,13 @@ MRE_I32               _MRE_textures_count       = -1;
 MRE_I32               _MRE_binded_texture_index = MRE_NONE_TEXTURE;
 struct MRE_Texture  * _MRE_btexture             = NULL;
 
+MRE_I32               _MRE_triangle_size = -1;
+
 void  (*_MRE_gettexel_fun[2])(
-  MRE_F64, MRE_F64, MRE_F64 *
+  const MRE_Vec3 *, MRE_I32, MRE_F64, MRE_F64, MRE_F64 *
+);
+void  (*_MRE_gettexture_fun[2])(
+  MRE_Vec3 * * const, MRE_I32 * const
 );
 
 
@@ -49,7 +54,8 @@ MRE_InitTextures
   
   for ( MRE_I32 j = 0; j < count; ++j )
   {
-    _MRE_textures[ j ] . data = NULL;
+    _MRE_textures[ j ] . data   = NULL;
+    _MRE_textures[ j ] . mipmap = NULL;
   }
 
   _MRE_textures_count = count;
@@ -90,8 +96,8 @@ MRE_TextureImage
     _MRE_btexture -> data[ j + format ][1] = data[ j * 3 + 1 ] / 255.0;
     _MRE_btexture -> data[ j + format ][2] = data[ j * 3 + 2 ] / 255.0;
   }
-  _MRE_btexture -> w = w;
-  _MRE_btexture -> h = h;
+  _MRE_btexture -> size = w;
+  _MRE_btexture -> size = h;
 }
 
 void
@@ -100,6 +106,20 @@ MRE_DestroyTextures
 
 )
 {
+  if ( _MRE_textures == NULL )  return;
+
+  for ( MRE_I32 j = 0; j < _MRE_textures_count; ++j )
+  {
+    if ( _MRE_textures[ j ] . data != NULL ) 
+    {
+      free( _MRE_textures[ j ] . data );
+    }
+    if ( _MRE_textures[ j ] . mipmap != NULL ) 
+    {
+      free( _MRE_textures[ j ] . mipmap );
+    }
+  }
+
   free( _MRE_textures );
 }
 
@@ -216,7 +236,6 @@ MRE_DrawArrays
   );
 
 
-
   vworld = malloc( vc * _MRE_vs * sizeof( MRE_F64 ) );
 
   for ( j = 0; j < vc; ++j )
@@ -275,10 +294,28 @@ MRE_TextureParameter
   switch ( param )
   {
     case MRE_NEAREST:
-      _MRE_gettexel_fun[ name ] = MRE_GetNearestTexel;
+      _MRE_gettexel_fun[ name ]   = MRE_GetNearestTexel;
+      _MRE_gettexture_fun[ name ] = MRE_GetCurrentTexture;
       break;
     case MRE_LINEAR:
-      _MRE_gettexel_fun[ name ] = MRE_GetLinerTexel;
+      _MRE_gettexel_fun[ name ]   = MRE_GetLinearTexel;
+      _MRE_gettexture_fun[ name ] = MRE_GetCurrentTexture;
+      break;
+    case MRE_NEAREST_MIPMAP_NEAREST:
+      _MRE_gettexel_fun[ name ]   = MRE_GetNearestTexel;
+      _MRE_gettexture_fun[ name ] = MRE_GetMipmapTexture;
+      break;
+    case MRE_LINEAR_MIPMAP_NEAREST:
+      _MRE_gettexel_fun[ name ]   = MRE_GetLinearTexel;
+      _MRE_gettexture_fun[ name ] = MRE_GetMipmapTexture;
+      break;
+    case MRE_NEAREST_MIPMAP_LINEAR:
+      _MRE_gettexel_fun[ name ]   = MRE_GetNearestMipmapTexel;
+      _MRE_gettexture_fun[ name ] = MRE_GetMipmapTexture;
+      break;
+    case MRE_LINEAR_MIPMAP_LINEAR:
+      _MRE_gettexel_fun[ name ]   = MRE_GetLinearMipmapTexel;
+      _MRE_gettexture_fun[ name ] = MRE_GetMipmapTexture;
       break;
   }
 }

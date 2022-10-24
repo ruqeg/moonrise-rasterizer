@@ -447,11 +447,14 @@ MRE_DrawTexturedTriangle
   MRE_I16     xmn;
   MRE_I16     xl;
   MRE_I16     xr;
+  MRE_I32     mipmap_level;
   MRE_F64     iz;
   MRE_Vec3    vcolor;
   MRE_Vec3    vpos;
   MRE_Vec3    vcord;
   MRE_Vec3    rvcolor;
+  MRE_Vec3  * rend_texture;
+  MRE_I32     rend_texture_size;
   MRE_F64   * xsl;
   MRE_F64   * xsr;
   MRE_F64   * xs012;
@@ -468,7 +471,7 @@ MRE_DrawTexturedTriangle
   MRE_F64   * vsr[8];
 
   void  (*gettexel_func)(
-    MRE_F64, MRE_F64, MRE_F64 *
+    const MRE_Vec3 *, MRE_I32, MRE_F64, MRE_F64, MRE_F64 *
   );
   
 
@@ -632,19 +635,25 @@ MRE_DrawTexturedTriangle
   xmn = ( p0[0] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
   xmx = ( p2[0] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
 
-  if
-  (
-    xmx - xmn < _MRE_btexture -> w
-    &&
-    ymx - ymn < _MRE_btexture -> h
-  )
+
+
+  _MRE_triangle_size = fmax( xmx - xmn, ymx - ymn );
+
+  if ( _MRE_triangle_size < _MRE_btexture -> size )
   {
+    _MRE_gettexture_fun[ MRE_TEXTURE_MIN_FILTER ](
+      &rend_texture, &rend_texture_size
+    );
     gettexel_func = _MRE_gettexel_fun[ MRE_TEXTURE_MIN_FILTER ];
   }
   else
   {
+    _MRE_gettexture_fun[ MRE_TEXTURE_MAG_FILTER ](
+      &rend_texture, &rend_texture_size
+    );
     gettexel_func = _MRE_gettexel_fun[ MRE_TEXTURE_MAG_FILTER ];
   }
+
 
   for ( y = ymn; y < ymx; ++y )
   {
@@ -673,8 +682,10 @@ MRE_DrawTexturedTriangle
       if ( iz > _MRE_z_buff[ _MRE_buff_w * y + x ] + MRE_F64_MIN )
       {
         gettexel_func(
-          ( _MRE_btexture -> w - 1 ) * vxs[ MRE_TOF + 0 ][ x - xl ] / iz,
-          ( _MRE_btexture -> h - 1 ) * vxs[ MRE_TOF + 1 ][ x - xl ] / iz,
+          rend_texture,
+          rend_texture_size,
+          vxs[ MRE_TOF + 0 ][ x - xl ] / iz,
+          vxs[ MRE_TOF + 1 ][ x - xl ] / iz,
           vcolor
         );
 

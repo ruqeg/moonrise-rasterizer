@@ -4,13 +4,16 @@
 #include <MRE_types.h>
 #include <MRE_math.h>
 
+#include <stdlib.h>
+#include <stddef.h>
+
 #define MRE_NONE_TEXTURE  -1
 
 struct MRE_Texture
 {
-  MRE_I32     w;
-  MRE_I32     h;
+  MRE_I32     size;
   MRE_Vec3  * data;
+  MRE_Vec3  * mipmap;
 };
 
 extern
@@ -22,20 +25,62 @@ MRE_GenerateMipmap
 
 extern
 void
-MRE_GetNearestTexel
+MRE_GetMipmapTexture
 (
-  MRE_F64    tx,
-  MRE_F64    ty,
-  MRE_F64  * dc
+    MRE_Vec3  * * const dtexture,
+    MRE_I32   * const   dtexture_size
 );
 
 extern
 void
-MRE_GetLinerTexel
+MRE_GetCurrentTexture
 (
-  MRE_F64    tx,
-  MRE_F64    ty,
-  MRE_F64  * dc
+    MRE_Vec3  * * const dtexture,
+    MRE_I32   * const   dtexture_size
+);
+
+extern
+void
+MRE_GetNearestTexel
+(
+    const MRE_Vec3  * texture,
+    MRE_I32           texture_size,
+    MRE_F64           tx,
+    MRE_F64           ty,
+    MRE_F64         * dc
+);
+
+extern
+void
+MRE_GetLinearTexel
+(
+    const MRE_Vec3  * texture,
+    MRE_I32           texture_size,
+    MRE_F64           tx,
+    MRE_F64           ty,
+    MRE_F64         * dc
+);
+
+extern
+void
+MRE_GetNearestMipmapTexel
+(
+    const MRE_Vec3  * texture,
+    MRE_I32           texture_size,
+    MRE_F64           tx,
+    MRE_F64           ty,
+    MRE_F64         * dc
+);
+
+extern
+void
+MRE_GetLinearMipmapTexel
+(
+    const MRE_Vec3  * texture,
+    MRE_I32           texture_size,
+    MRE_F64           tx,
+    MRE_F64           ty,
+    MRE_F64         * dc
 );
 
 #endif /* MRE_TEXTURE_H */
