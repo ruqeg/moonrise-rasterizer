@@ -1,51 +1,26 @@
-#include <MRE.h>
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-
-#include <time.h>
-
+//macro for sdl
 #define WINDOW_WIDTH   800
 #define WINDOW_HEIGHT  600
+#define WINDOW_TITLE   "Moonrise example"
+#define NO_CURSOR
+
+#include "sdl_helper.c"
+
+
+#include <MRE.h>
 
 
 __MRE_DEF_VERT_SHADER( CustomVertexShader )
 {
-  MRE_Mat4  transform_mat;
-  MRE_Mat4  rotate_mat;
-  MRE_Mat4  world_mat;
-  MRE_Vec3  vpos;
-  MRE_Vec3  vrot;
-  
-  MRE_SET_VEC3( 0.0, 0.0, 9.0, vpos );
-  MRE_SET_VEC3(
-    M_PI_2 * 0.5 * SDL_GetTicks() * 0.001,
-    M_PI_2 * 0.5 * SDL_GetTicks() * 0.001, 
-    M_PI_2 * 0.5 * SDL_GetTicks() * 0.001,
-    vrot
-  );
-
-  MRE_TanslateMat4( vpos, transform_mat );
-  MRE_RotateMat4( vrot, rotate_mat );
-  
-  MRE_MulMat4(
-    transform_mat,
-    rotate_mat,
-    world_mat
-  );
-  
-  MRE_MulMat4Vec3Vec3(
-    world_mat,
-    in, 1.0,
-    out
-  );
+#include "vertex.shader"
 }
 
 
 __MRE_DEF_FRAG_SHADER( CustomFragmentShader )
 {
-  MRE_COPY_VEC3( in, out );
+#include "fragment.shader"
 }
+
 
 int 
 main
@@ -53,149 +28,110 @@ main
     int, char **
 )
 {
-  int             quit;
+  // Init
+  {
+    SDLH_InitSDL();
+    
+    MRE_F64 fowy  = MRE_PI / 5.0;
+    MRE_F64 ratio = WINDOW_WIDTH / ( MRE_F64 )WINDOW_HEIGHT;
+    MRE_F64 minz  = 0.5;
+    MRE_F64 maxz  = 100;
+    
+    MRE_SetPrespsectiveView(
+      fowy,
+      ratio,
+      minz,
+      maxz
+    );
+    
+    MRE_InitZBuffer( WINDOW_WIDTH, WINDOW_HEIGHT );
+  }
 
-  int             pixels_pitch;
-  void          * pixels;
-
-  SDL_Event       event;
-  
-  SDL_Window    * window;
-  SDL_Renderer  * sdl_renderer;
-  SDL_Texture   * sdl_texture;
-
-  MRE_I32         vertex_count;
-  MRE_Vec4        bounding_sphere;
-  
-
-
-  SDL_Init(SDL_INIT_VIDEO);
-  SDL_SetRelativeMouseMode(SDL_TRUE);
-
-  window = SDL_CreateWindow(
-    "Moonrise Engine | Example",
-    SDL_WINDOWPOS_UNDEFINED,
-    SDL_WINDOWPOS_UNDEFINED,
-    WINDOW_WIDTH,
-    WINDOW_HEIGHT,
-    SDL_WINDOW_SHOWN
-  );
-  
-  sdl_renderer = SDL_CreateRenderer(
-    window, -1, SDL_RENDERER_ACCELERATED
-  );
-  
-  sdl_texture = SDL_CreateTexture(
-    sdl_renderer, 
-    SDL_PIXELFORMAT_RGBA8888,
-    SDL_TEXTUREACCESS_STREAMING, 
-    WINDOW_WIDTH,
-    WINDOW_HEIGHT
-  );
-
-  
-  MRE_InitZBuffer( WINDOW_WIDTH, WINDOW_HEIGHT );
-  MRE_SetPrespsectiveView(
-    MRE_PI / 5.0,
-    WINDOW_WIDTH / ( MRE_F64 )WINDOW_HEIGHT,
-    0.5,
-    100.0
-  );
-
-  vertex_count = 36;
-  
+  // Create cube model
+  // ( format of vertex ) 
+  //   => { x, y, z, r, g, b }
+  MRE_I32  vertex_count = 36;
   MRE_F64  vertex[  ] =
   {
-     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
-     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
-     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0,
+     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
+     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
+     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
 
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
-     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0,
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0,
-     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
+     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
 
-    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
-    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
-     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
-    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  0.0,
+    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
+    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
+    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
 
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
-    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  0.0,
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  0.0,
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
 
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  0.0,
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,  1.0,  1.0,
-    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  0.0,
-     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+    -1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+     1.0,  1.0, -1.0,  0.0,  1.0,  0.0,
+    -1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
+     1.0,  1.0,  1.0,  1.0,  1.0,  1.0,
 
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
-    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  0.0,
-     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
-    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  0.0,
-     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,  0.0,  1.0,
-     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,  0.0,  1.0
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
+    -1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
+     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
+    -1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
+     1.0, -1.0, -1.0,  0.0,  0.0,  1.0,
+     1.0, -1.0,  1.0,  1.0,  0.0,  0.0,
   };
 
-  quit = 0;
 
+  int quit = 0;
   while ( quit == 0 )
   {
+    SDL_Event  event;
+
     while ( SDL_PollEvent( &event ) )
     {
-      switch ( event . type )
-      {
-        case SDL_QUIT:
-          quit = 1;
-          break;
-      }
+      switch ( event . type )  case SDL_QUIT:  quit = 1;
     }
+  
     
-    SDL_LockTexture( sdl_texture, NULL, &pixels, &pixels_pitch );
+    SDLH_StartRenderSDL();
+    SDLH_CleerBufferSDL( 0x00000000u );
 
-    {   
-      memset( pixels, 0, sizeof(MRE_UI32) * WINDOW_WIDTH * WINDOW_HEIGHT);
+    //Init bounding sphere of cube by hand to speed up rendering
+    //   Also you can use MRE_SmallestBoundingSphere in MRE_bounding_sphere.h
+    MRE_Vec4 bounding_sphere;
+    MRE_SET_VEC4( 0.0, 0.0, 7 + SDL_GetTicks() * 0.001, sqrt( 3 ), bounding_sphere );
 
-      MRE_SET_VEC4( 0.0, 0.0, 8.0, sqrt( 3 ), bounding_sphere );
+    MRE_SetBuffer( SDLH_pixels, WINDOW_WIDTH, WINDOW_HEIGHT );
+    MRE_SetVertexAttribSize( 6 );
+    MRE_BindVertexShader( CustomVertexShader );
+    MRE_BindFragmentShader( CustomFragmentShader );
+    MRE_DrawArrays(
+      MRE_TRIANGLES,
+      vertex, vertex_count,
+      bounding_sphere
+    );
+    MRE_ClearZBuffer();
 
-      MRE_SetBuffer( pixels, WINDOW_WIDTH, WINDOW_HEIGHT );
-      MRE_SetVertexAttribSize( 8 );
-      MRE_BindVertexShader( CustomVertexShader );
-      MRE_BindFragmentShader( CustomFragmentShader );
-      MRE_DrawArrays(
-        MRE_TRIANGLES,
-        vertex, vertex_count,
-        bounding_sphere
-      );
-      MRE_ClearZBuffer();
-    }
-
-    SDL_UnlockTexture( sdl_texture );
-    
-    SDL_Rect r = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
-    SDL_RenderCopy( sdl_renderer, sdl_texture, NULL, &r );
-
-    SDL_RenderPresent( sdl_renderer );
+    SDLH_EndRenderSDL();
   }
 
   MRE_DestroyZBuffer();
-
-  SDL_DestroyTexture( sdl_texture );
-  SDL_DestroyRenderer( sdl_renderer );
-  SDL_DestroyWindow( window );
-  SDL_Quit();
+  SDLH_DestroySDL();
 
   return 0;
 }

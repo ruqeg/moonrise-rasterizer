@@ -1,13 +1,15 @@
 #ifndef MRE_TEXTURE_H
 #define MRE_TEXTURE_H
 
-#include <MRE_types.h>
 #include <MRE_math.h>
+#include <MRE_alg.h>
 
 #include <stdlib.h>
 #include <stddef.h>
 
 #define MRE_NONE_TEXTURE  -1
+
+#define MRE_RGB            0
 
 struct MRE_Texture
 {

@@ -10,13 +10,7 @@ _MRE_BuildLameMipmap
     MRE_Vec3  * d
 )
 {
-  // TODO
-  // box-filtering (a + b + c + d) / 4.0
-  // OR
-  // box-filtering sqrt(a*a + b*b + c*c + d*d) / 4.0
-  // OR
-  // kaiser filter ??
-  
+  // TODO kaiser filter
   MRE_I32  u;
   MRE_I32  v;
   MRE_I32  dsize;
@@ -28,33 +22,17 @@ _MRE_BuildLameMipmap
   {
     for ( u = 0; u < dsize; ++u )
     {
-      d[ v * dsize + u ][0] = sqrt(
-        MRE_POW2( source[ ( 2 * v + 0 ) * size + 2 * u + 0 ][0] )
-        +
-        MRE_POW2( source[ ( 2 * v + 0 ) * size + 2 * u + 1 ][0] )
-        +
-        MRE_POW2( source[ ( 2 * v + 1 ) * size + 2 * u + 0 ][0] )
-        +
-        MRE_POW2( source[ ( 2 * v + 1 ) * size + 2 * u + 1 ][0] )
-      ) / 2.0;
-      d[ v * dsize + u ][1] = sqrt(
-        MRE_POW2( source[ ( 2 * v + 0 ) * size + 2 * u + 0 ][1] )
-        +
-        MRE_POW2( source[ ( 2 * v + 0 ) * size + 2 * u + 1 ][1] )
-        +
-        MRE_POW2( source[ ( 2 * v + 1 ) * size + 2 * u + 0 ][1] )
-        +
-        MRE_POW2( source[ ( 2 * v + 1 ) * size + 2 * u + 1 ][1] )
-      ) / 2.0;
-      d[ v * dsize + u ][2] = sqrt(
-        MRE_POW2( source[ ( 2 * v + 0 ) * size + 2 * u + 0 ][2] )
-        +
-        MRE_POW2( source[ ( 2 * v + 0 ) * size + 2 * u + 1 ][2] )
-        +
-        MRE_POW2( source[ ( 2 * v + 1 ) * size + 2 * u + 0 ][2] )
-        +
-        MRE_POW2( source[ ( 2 * v + 1 ) * size + 2 * u + 1 ][2] )
-      ) / 2.0;
+      _MRE_CFOR( 3, {
+        d[ v * dsize + u ][ _k ] = sqrt(
+          MRE_POW2( source[ ( 2 * v + 0 ) * size + 2 * u + 0 ][ _k ] )
+          +
+          MRE_POW2( source[ ( 2 * v + 0 ) * size + 2 * u + 1 ][ _k ] )
+          +
+          MRE_POW2( source[ ( 2 * v + 1 ) * size + 2 * u + 0 ][ _k ] )
+          +
+          MRE_POW2( source[ ( 2 * v + 1 ) * size + 2 * u + 1 ][ _k ] )
+        ) / 2.0;
+      } );
     }
   }
 }
@@ -154,8 +132,11 @@ MRE_GetNearestTexel
   MRE_I32    rd_tx;
   MRE_I32    rd_ty;
 
-  rd_tx = round( ( texture_size ) * tx );
-  rd_ty = round( ( texture_size ) * ty );
+  rd_tx = texture_size * tx;
+  rd_ty = texture_size * ty;
+
+  if ( rd_tx == texture_size ) rd_tx = texture_size - 1;
+  if ( rd_ty == texture_size ) rd_ty = texture_size - 1;
 
   MRE_COPY_VEC3(
     texture[ rd_ty * texture_size + rd_tx ],
@@ -194,6 +175,12 @@ MRE_GetLinearTexel
   fl_ty = ( MRE_I32 )( ty );
   ce_tx = ceil( tx );
   ce_ty = ceil( ty );
+  
+  if ( ce_tx == texture_size )  ce_tx = texture_size - 1;
+  if ( ce_ty == texture_size )  ce_ty = texture_size - 1;
+  if ( fl_tx == texture_size )  fl_tx = texture_size - 1;
+  if ( fl_ty == texture_size )  fl_ty = texture_size - 1;
+  
   fr_tx = tx - fl_tx;
   fr_ty = ty - fl_ty;
 
@@ -263,5 +250,5 @@ MRE_GetLinearMipmapTexel
   
   t = ( _MRE_triangle_size - texture_size ) / ( MRE_F64 )texture_size;
 
-  MRE_VEC3_COEFF_2( c1, t, c2, 1 - t, dc );
+  MRE_VEC3_COEFF_2( c1, t, c2, 1.0 - t, dc );
 }

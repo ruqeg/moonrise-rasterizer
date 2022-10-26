@@ -5,7 +5,6 @@
 #include <MRE_color.h>
 #include <MRE_alg.h>
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 

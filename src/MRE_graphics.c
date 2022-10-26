@@ -444,6 +444,7 @@ MRE_DrawTexturedTriangle
   MRE_I16     ymd;
   MRE_I16     ymn;
   MRE_I16     xmx;
+  MRE_I16     xmd;
   MRE_I16     xmn;
   MRE_I16     xl;
   MRE_I16     xr;
@@ -627,17 +628,21 @@ MRE_DrawTexturedTriangle
   }
   
 
-
-  if ( p1[0] < p0[0] )  MRE_SWAP( const MRE_F64 *, p0, p1 );
-  if ( p2[0] < p0[0] )  MRE_SWAP( const MRE_F64 *, p0, p2 );
-  if ( p2[0] < p1[0] )  MRE_SWAP( const MRE_F64 *, p1, p2 );
-
   xmn = ( p0[0] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
+  xmd = ( p1[0] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
   xmx = ( p2[0] * 0.5 + 0.5 ) * ( _MRE_buff_w - 1 );
 
 
-
-  _MRE_triangle_size = fmax( xmx - xmn, ymx - ymn );
+  _MRE_triangle_size = sqrt(
+    fmin(
+      fmin(
+        MRE_POW2( xmd - xmn ) + MRE_POW2( ymd - ymn ),
+        MRE_POW2( xmx - xmd ) + MRE_POW2( ymx - ymd )
+      ),
+      MRE_POW2( xmx - xmn ) + MRE_POW2( ymx - ymn )
+    )
+  );
+  if ( _MRE_triangle_size == 0 )  _MRE_triangle_size = 1;
 
   if ( _MRE_triangle_size < _MRE_btexture -> size )
   {
