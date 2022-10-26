@@ -39,13 +39,13 @@ main
   {
     SDLH_InitSDL();
     
-    MRE_F64 fowy  = MRE_PI / 5.0;
+    MRE_F64 fovy  = MRE_PI / 5.0;
     MRE_F64 ratio = WINDOW_WIDTH / ( MRE_F64 )WINDOW_HEIGHT;
     MRE_F64 minz  = 0.5;
     MRE_F64 maxz  = 100;
     
     MRE_SetPrespsectiveView(
-      fowy,
+      fovy,
       ratio,
       minz,
       maxz
