@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 project(moonrise-engine VERSION 0.0.1 LANGUAGES C)
 
 option(BUILD_SHARED_LIBS "Build shared libraries (.dll/.so) instead of static ones (.lib/.a)" ON)
-option(MRE_BUILD_EXAMPLE OFF)
+option(MRE_BUILD_EXAMPLE_ROTATING_CUBE OFF)
+option(MRE_BUILD_EXAMPLE_TEXTURED_CUBE OFF)
 
 find_package(SDL2 REQUIRED)
 
@@ -29,8 +30,9 @@ install(
   RUNTIME DESTINATION bin
 )
 
-if(MRE_BUILD_EXAMPLE)
+if(MRE_BUILD_EXAMPLE_ROTATING_CUBE OR MRE_BUILD_EXAMPLE_TEXTURED_CUBE)
   add_subdirectory(example)
 endif()
 
-unset(MRE_BUILD_EXAMPLE CACHE)
+unset(MRE_BUILD_EXAMPLE_ROTATING_CUBE CACHE)
+unset(MRE_BUILD_EXAMPLE_TEXTURED_CUBE CACHE)
